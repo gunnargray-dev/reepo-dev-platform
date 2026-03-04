@@ -153,6 +153,15 @@ def cmd_newsletter(args):
         print(json.dumps(digest, indent=2))
 
 
+def cmd_export_data(args):
+    from src.db import init_db
+    from src.open_data import generate_open_data_export
+
+    init_db(args.db)
+    filepath = generate_open_data_export(args.db, output_dir=args.output)
+    print(f"Open data export written to: {filepath}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="reepo",
@@ -201,6 +210,12 @@ def main():
     newsletter_parser.add_argument("--db", type=str, default=DEFAULT_DB, help="Database path")
     newsletter_parser.add_argument("--json", action="store_true", help="Output raw JSON")
     newsletter_parser.set_defaults(func=cmd_newsletter)
+
+    # export-data
+    export_parser = subparsers.add_parser("export-data", help="Generate open data CSV export")
+    export_parser.add_argument("--db", type=str, default=DEFAULT_DB, help="Database path")
+    export_parser.add_argument("--output", type=str, default="data", help="Output directory")
+    export_parser.set_defaults(func=cmd_export_data)
 
     args = parser.parse_args()
 

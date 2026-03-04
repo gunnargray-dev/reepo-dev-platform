@@ -1,0 +1,32 @@
+name: "Reepo Score Check"
+description: "Fetches the Reepo Score for your repo and posts it as a PR check annotation"
+inputs:
+  repo:
+    description: "Repository in owner/name format (defaults to current repo)"
+    required: false
+    default: "${{ github.repository }}"
+  api-url:
+    description: "Reepo API base URL"
+    required: false
+    default: "https://reepo.dev"
+runs:
+  using: "composite"
+  steps:
+    - name: Fetch Reepo Score
+      shell: bash
+      env:
+        REPO: ${{ inputs.repo }}
+        API_URL: ${{ inputs.api-url }}
+      run: |
+        OWNER=$(echo "$REPO" | cut -d'/' -f1)
+        NAME=$(echo "$REPO" | cut -d'/' -f2)
+        RESPONSE=$(curl -sf "${API_URL}/api/repos/${OWNER}/${NAME}" 2>/dev/null || echo '{}')
+        SCORE=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('reepo_score','N/A'))" 2>/dev/null || echo "N/A")
+        
+        if [ "$SCORE" = "N/A" ] || [ "$SCORE" = "None" ]; then
+          echo "::notice::Reepo Score: Not yet indexed. Submit your repo at https://reepo.dev"
+        else
+          echo "::notice::Reepo Score: ${SCORE}/100 — View details at ${API_URL}/repo/${OWNER}/${NAME}"
+        fi
+        
+        echo "REEPO_SCORE=${SCORE}" >> $GITHUB_OUTPUT
