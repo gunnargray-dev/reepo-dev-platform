@@ -68,7 +68,7 @@
 ## Session 4 — Phase 6 Monetization Infrastructure
 **Date:** 2026-03-04
 **Phase:** 6
-**PR:** [#5](https://github.com/gunnargray-dev/reepo-dev-platform/pull/5) (squash-merged)
+**PR:** [#6](https://github.com/gunnargray-dev/reepo-dev-platform/pull/6) (squash-merged)
 **What shipped:**
 - `src/monetization/db.py` — 7 new tables: sponsors, sponsored_listings, subscriptions, affiliate_links, newsletter_subscribers, newsletter_sponsors, api_usage
 - `src/monetization/sponsors.py` — Sponsor CRUD, listing management with date-aware active filtering, impression/click tracking, analytics dashboard with CTR
