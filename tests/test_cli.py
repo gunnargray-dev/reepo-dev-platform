@@ -43,9 +43,13 @@ class TestCliBasic:
         result = _run_cli("--help")
         assert "seed" in result.stdout
 
-    def test_serve_placeholder(self):
-        result = _run_cli("serve")
-        assert "not yet implemented" in result.stdout.lower()
+    def test_help_mentions_serve(self):
+        result = _run_cli("--help")
+        assert "serve" in result.stdout
+
+    def test_help_mentions_search(self):
+        result = _run_cli("--help")
+        assert "search" in result.stdout
 
 
 # --- Crawl ---
@@ -132,4 +136,46 @@ class TestCliSeed:
             db_path = os.path.join(tmpdir, "test.db")
             _run_cli("seed", "--db", db_path)
             result = _run_cli("seed", "--db", db_path)
+            assert result.returncode == 0
+
+
+# --- Serve ---
+
+class TestCliServe:
+    def test_serve_help(self):
+        result = _run_cli("serve", "--help")
+        assert result.returncode == 0
+        assert "--db" in result.stdout
+        assert "--port" in result.stdout
+
+
+# --- Search ---
+
+class TestCliSearch:
+    def test_search_help(self):
+        result = _run_cli("search", "--help")
+        assert result.returncode == 0
+        assert "--sort" in result.stdout
+        assert "--limit" in result.stdout
+
+    def test_search_no_results(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = os.path.join(tmpdir, "test.db")
+            result = _run_cli("search", "nonexistent", "--db", db_path)
+            assert result.returncode == 0
+            assert "No results found" in result.stdout
+
+    def test_search_with_results(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = os.path.join(tmpdir, "test.db")
+            _run_cli("seed", "--db", db_path)
+            result = _run_cli("search", "langchain", "--db", db_path)
+            assert result.returncode == 0
+            assert "langchain" in result.stdout.lower()
+
+    def test_search_with_limit(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = os.path.join(tmpdir, "test.db")
+            _run_cli("seed", "--db", db_path)
+            result = _run_cli("search", "ai", "--db", db_path, "--limit", "3")
             assert result.returncode == 0

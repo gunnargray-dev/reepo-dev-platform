@@ -77,6 +77,47 @@ def cmd_seed(args):
     print(f"Seeded {count} repos into {args.db}")
 
 
+def cmd_serve(args):
+    import uvicorn
+    from src.server import create_app
+
+    create_app(db_path=args.db)
+    uvicorn.run(
+        "src.server:app",
+        host="0.0.0.0",
+        port=args.port,
+        reload=False,
+    )
+
+
+def cmd_search(args):
+    from src.db import init_db
+    from src.search import search, init_fts
+
+    init_db(args.db)
+    init_fts(args.db)
+    result = search(
+        path=args.db,
+        query=args.query,
+        sort=args.sort,
+        page=1,
+        per_page=args.limit,
+    )
+
+    if not result["results"]:
+        print("No results found.")
+        return
+
+    print(f"Found {result['total']} results (showing {len(result['results'])}):\n")
+    for repo in result["results"]:
+        score = repo.get("reepo_score", "?")
+        stars = repo.get("stars", 0)
+        desc = (repo.get("description") or "")[:80]
+        print(f"  [{score}] {repo['full_name']} \u2605{stars}")
+        if desc:
+            print(f"       {desc}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="reepo",
@@ -106,8 +147,19 @@ def main():
     seed_parser.add_argument("--db", type=str, default=DEFAULT_DB, help="Database path")
     seed_parser.set_defaults(func=cmd_seed)
 
-    # serve (placeholder)
-    subparsers.add_parser("serve", help="Start the FastAPI server")
+    # serve
+    serve_parser = subparsers.add_parser("serve", help="Start the FastAPI server")
+    serve_parser.add_argument("--db", type=str, default=DEFAULT_DB, help="Database path")
+    serve_parser.add_argument("--port", type=int, default=8000, help="Port to bind")
+    serve_parser.set_defaults(func=cmd_serve)
+
+    # search
+    search_parser = subparsers.add_parser("search", help="Search indexed repos")
+    search_parser.add_argument("query", type=str, help="Search query")
+    search_parser.add_argument("--db", type=str, default=DEFAULT_DB, help="Database path")
+    search_parser.add_argument("--sort", type=str, default="relevance", help="Sort: relevance, stars, score, newest")
+    search_parser.add_argument("--limit", type=int, default=20, help="Max results")
+    search_parser.set_defaults(func=cmd_search)
 
     args = parser.parse_args()
 
