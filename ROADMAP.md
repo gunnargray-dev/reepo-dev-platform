@@ -13,13 +13,13 @@
 The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 
 - [x] **Project initialization** — Repo structure, roadmap, rules, session log, pyproject.toml, test framework
-- [ ] **GitHub crawler** — Discover AI repos by topic tags, language, and keyword search via GitHub Search API. Rate-limit aware with exponential backoff.
-- [ ] **Category taxonomy** — Define and assign categories. LLM classification on repo description + README excerpt for auto-categorization.
-- [ ] **Repo analyzer pipeline** — Maintenance health, documentation quality, community signals, test presence, license type. Composite Reepo Score (0–100).
-- [ ] **SQLite data store** — repos, score_history, categories tables with proper indexes.
-- [ ] **CLI commands** — `reepo crawl`, `reepo analyze`, `reepo stats`
-- [ ] **Seed batch** — Crawl and analyze initial 500+ AI repos across all categories.
-- [ ] Tests for all modules (target: 150+ tests)
+- [x] **GitHub crawler** — Discover AI repos by topic tags, language, and keyword search via GitHub Search API. Rate-limit aware with exponential backoff.
+- [x] **Category taxonomy** — Define and assign categories. LLM classification on repo description + README excerpt for auto-categorization.
+- [x] **Repo analyzer pipeline** — Maintenance health, documentation quality, community signals, test presence, license type. Composite Reepo Score (0–100).
+- [x] **SQLite data store** — repos, score_history, categories tables with proper indexes.
+- [x] **CLI commands** — `reepo crawl`, `reepo analyze`, `reepo stats`
+- [x] **Seed batch** — Crawl and analyze initial 500+ AI repos across all categories.
+- [x] Tests for all modules (target: 150+ tests)
 
 ---
 
