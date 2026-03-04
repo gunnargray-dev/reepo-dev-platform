@@ -1,6 +1,80 @@
 """Reepo CLI — command-line interface for the Reepo platform."""
 import argparse
+import asyncio
+import os
 import sys
+
+
+DEFAULT_DB = "data/reepo.db"
+
+
+def cmd_crawl(args):
+    from src.crawler import crawl_all, crawl_topic
+
+    token = args.token or os.environ.get("GITHUB_TOKEN")
+
+    if args.topic:
+        repos = asyncio.run(crawl_topic(args.topic, token=token, db_path=args.db))
+        print(f"Crawled topic '{args.topic}': {len(repos)} repos found")
+    else:
+        count = asyncio.run(crawl_all(token=token, db_path=args.db))
+        print(f"Crawl complete: {count} repos indexed")
+
+
+def cmd_analyze(args):
+    from src.analyzer import analyze_all_unscored
+    from src.db import init_db
+
+    init_db(args.db)
+    count = analyze_all_unscored(args.db)
+    print(f"Analyzed {count} repos")
+
+
+def cmd_stats(args):
+    from src.db import (
+        init_db,
+        count_repos,
+        get_repos_by_category,
+        get_repos_by_language,
+        get_score_stats,
+    )
+
+    init_db(args.db)
+    total = count_repos(args.db)
+    by_category = get_repos_by_category(args.db)
+    by_language = get_repos_by_language(args.db, limit=10)
+    score_stats = get_score_stats(args.db)
+
+    print(f"Total repos: {total}")
+    print()
+
+    if by_category:
+        print("Repos by category:")
+        for cat, cnt in by_category.items():
+            print(f"  {cat}: {cnt}")
+        print()
+
+    if by_language:
+        print("Top languages:")
+        for lang, cnt in by_language.items():
+            print(f"  {lang}: {cnt}")
+        print()
+
+    if score_stats["avg_score"]:
+        print(f"Average Reepo Score: {score_stats['avg_score']}")
+        dist = score_stats["distribution"]
+        print("Score distribution:")
+        print(f"  Excellent (80+): {dist['excellent_80_plus']}")
+        print(f"  Good (60-79):    {dist['good_60_79']}")
+        print(f"  Fair (40-59):    {dist['fair_40_59']}")
+        print(f"  Poor (<40):      {dist['poor_below_40']}")
+
+
+def cmd_seed(args):
+    from src.seed import seed_database
+
+    count = seed_database(args.db)
+    print(f"Seeded {count} repos into {args.db}")
 
 
 def main():
@@ -10,10 +84,29 @@ def main():
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # Placeholder subcommands — implemented in later sessions
-    subparsers.add_parser("crawl", help="Crawl GitHub for AI repos")
-    subparsers.add_parser("analyze", help="Run analysis pipeline on indexed repos")
-    subparsers.add_parser("stats", help="Print index statistics")
+    # crawl
+    crawl_parser = subparsers.add_parser("crawl", help="Crawl GitHub for AI repos")
+    crawl_parser.add_argument("--topic", type=str, help="Crawl a specific topic")
+    crawl_parser.add_argument("--db", type=str, default=DEFAULT_DB, help="Database path")
+    crawl_parser.add_argument("--token", type=str, help="GitHub API token")
+    crawl_parser.set_defaults(func=cmd_crawl)
+
+    # analyze
+    analyze_parser = subparsers.add_parser("analyze", help="Run analysis pipeline on indexed repos")
+    analyze_parser.add_argument("--db", type=str, default=DEFAULT_DB, help="Database path")
+    analyze_parser.set_defaults(func=cmd_analyze)
+
+    # stats
+    stats_parser = subparsers.add_parser("stats", help="Print index statistics")
+    stats_parser.add_argument("--db", type=str, default=DEFAULT_DB, help="Database path")
+    stats_parser.set_defaults(func=cmd_stats)
+
+    # seed
+    seed_parser = subparsers.add_parser("seed", help="Populate DB with seed data for development")
+    seed_parser.add_argument("--db", type=str, default=DEFAULT_DB, help="Database path")
+    seed_parser.set_defaults(func=cmd_seed)
+
+    # serve (placeholder)
     subparsers.add_parser("serve", help="Start the FastAPI server")
 
     args = parser.parse_args()
@@ -22,7 +115,10 @@ def main():
         parser.print_help()
         sys.exit(0)
 
-    print(f"Command '{args.command}' not yet implemented. See ROADMAP.md.")
+    if hasattr(args, "func"):
+        args.func(args)
+    else:
+        print(f"Command '{args.command}' not yet implemented. See ROADMAP.md.")
 
 
 if __name__ == "__main__":
