@@ -12,6 +12,7 @@ from src.monetization.db import init_monetization_db
 from src.analytics import init_analytics_db
 from src.community.contributors import init_contributor_db
 from src.community.db import init_community_db
+from src.growth.db import init_growth_db
 
 _db_path: str = DEFAULT_DB_PATH
 
@@ -60,6 +61,10 @@ def create_app(db_path: str | None = None) -> FastAPI:
     from src.api.community import router as community_router
     from src.api.admin import router as admin_router
     from src.api.blog import router as blog_router
+    from src.api.badges import router as badges_router
+    from src.api.scheduler import router as scheduler_router
+    from src.api.recommendations import router as recommendations_router
+    from src.api.changelog import router as changelog_router
 
     application.include_router(search_router)
     application.include_router(repos_router)
@@ -78,6 +83,10 @@ def create_app(db_path: str | None = None) -> FastAPI:
     application.include_router(community_router)
     application.include_router(admin_router)
     application.include_router(blog_router)
+    application.include_router(badges_router)
+    application.include_router(scheduler_router)
+    application.include_router(recommendations_router)
+    application.include_router(changelog_router)
 
     @application.on_event("startup")
     def startup():
@@ -88,6 +97,7 @@ def create_app(db_path: str | None = None) -> FastAPI:
         init_analytics_db(_db_path)
         init_contributor_db(_db_path)
         init_community_db(_db_path)
+        init_growth_db(_db_path)
 
     @application.get("/api/health")
     def health():
