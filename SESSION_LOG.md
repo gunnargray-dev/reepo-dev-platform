@@ -25,3 +25,20 @@
 - `src/cli.py` — Full CLI: `reepo crawl`, `reepo analyze`, `reepo stats`, `reepo seed` with `--db` and `--token` flags
 - 274 tests across 6 test files (target was 150+)
 **Roadmap items checked off:** GitHub crawler, Category taxonomy, Repo analyzer pipeline, SQLite data store, CLI commands, Seed batch, Tests for all modules
+
+---
+
+## Session 2 — Phase 2 Search & API
+**Date:** 2026-03-04
+**Phase:** 2
+**PR:** [#4](https://github.com/gunnargray-dev/reepo-dev-platform/pull/4) (squash-merged)
+**What shipped:**
+- `src/search.py` — FTS5 full-text search engine with query sanitization, filters (category, language, min_score), sorting (relevance, stars, score, newest), pagination, and highlighted snippets
+- `src/trending.py` — Star snapshot recording, delta computation, velocity/trending score calculation, period support (day/week/month), new repos detection
+- `src/similar.py` — Jaccard similarity on topics (0.7 weight) + star proximity on log10 scale (0.3 weight), filtered by same category
+- `src/server.py` — FastAPI server with app factory pattern, CORS middleware, startup DB/FTS/trending init, OpenAPI docs at /api/docs
+- `src/api/` — 5 route modules: search, repos (detail + similar), categories, trending (+ new), stats
+- `src/middleware.py` — Per-IP rate limiter middleware, in-memory TTL cache (search: 5min, detail: 15min), deterministic cache key generation
+- `src/cli.py` — Added `reepo serve` (--db, --port) and `reepo search` (query, --sort, --limit) commands
+- 139 new tests across 6 test files (413 total, target was 250+)
+**Roadmap items checked off:** Full-text search engine, FastAPI server, Trending algorithm, Similar repos engine, API rate limiting & caching, OpenAPI spec, Tests
