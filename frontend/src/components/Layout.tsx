@@ -15,6 +15,7 @@ export default function Layout({ children }: LayoutProps) {
     { to: '/search', label: 'Search' },
     { to: '/trending', label: 'Trending' },
     { to: '/category/frameworks', label: 'Categories' },
+    { to: '/stats', label: 'Stats' },
     { to: '/pricing', label: 'Pricing' },
   ];
 
@@ -79,7 +80,10 @@ export default function Layout({ children }: LayoutProps) {
                 </div>
                 <p className="text-sm text-gray-500">Open source discovery engine for AI repos</p>
               </div>
-              <NewsletterForm />
+              <div className="flex items-center gap-6">
+                <a href="/api/open-data/latest.csv" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">Open Data</a>
+                <NewsletterForm />
+              </div>
             </div>
           </div>
         </div>

@@ -7,6 +7,8 @@ import Category from './pages/Category';
 import Trending from './pages/Trending';
 import Pricing from './pages/Pricing';
 import Compare from './pages/Compare';
+import Stats from './pages/Stats';
+import AdminAnalytics from './pages/AdminAnalytics';
 
 export default function App() {
   return (
@@ -19,6 +21,8 @@ export default function App() {
         <Route path="/trending" element={<Trending />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/compare" element={<Compare />} />
+        <Route path="/stats" element={<Stats />} />
+        <Route path="/admin/analytics" element={<AdminAnalytics />} />
       </Routes>
     </Layout>
   );
