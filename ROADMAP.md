@@ -25,26 +25,26 @@ The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 
 ## Phase 2 — Search & API (Sessions 4–7)
 
-- [ ] **Full-text search engine** — SQLite FTS5 index with filters and highlighted snippets
-- [ ] **FastAPI server** — GET /api/search, /api/repos/{owner}/{name}, /api/categories, /api/trending, /api/stats, /api/repos/{owner}/{name}/similar
-- [ ] **Trending algorithm** — Star velocity, acceleration, recency scoring
-- [ ] **Similar repos engine** — Jaccard similarity on topics, category, star range
-- [ ] **API rate limiting & caching** — Per-IP rate limiting, TTL cache, ETag support
-- [ ] **OpenAPI spec** — Auto-generated docs at /api/docs
-- [ ] Tests (target: 250+ total)
+- [x] **Full-text search engine** — SQLite FTS5 index with filters and highlighted snippets
+- [x] **FastAPI server** — GET /api/search, /api/repos/{owner}/{name}, /api/categories, /api/trending, /api/stats, /api/repos/{owner}/{name}/similar
+- [x] **Trending algorithm** — Star velocity, acceleration, recency scoring
+- [x] **Similar repos engine** — Jaccard similarity on topics, category, star range
+- [x] **API rate limiting & caching** — Per-IP rate limiting, TTL cache, ETag support
+- [x] **OpenAPI spec** — Auto-generated docs at /api/docs
+- [x] Tests (target: 250+ total) — 413 tests passing
 
 ---
 
 ## Phase 3 — Web Frontend (Sessions 8–14)
 
-- [ ] **Landing page** — Search bar, category grid, trending carousel, dark mode
-- [ ] **Search results page** — Filterable sidebar, repo cards with Reepo Score badges
-- [ ] **Repo detail page** — Score breakdown, README preview, similar repos, share button
-- [ ] **Category browse pages** — /category/{slug}
-- [ ] **Trending page** — Daily/weekly/monthly tabs
+- [x] **Landing page** — Search bar, category grid, trending carousel, dark mode
+- [x] **Search results page** — Filterable sidebar, repo cards with Reepo Score badges
+- [x] **Repo detail page** — Score breakdown, README preview, similar repos, share button
+- [x] **Category browse pages** — /category/{slug}
+- [x] **Trending page** — Daily/weekly/monthly tabs
 - [ ] **SEO infrastructure** — SSR/pre-rendering, OG tags, sitemap, structured data
 - [ ] **OG share cards** — Dynamic 1200×630 PNG per repo
-- [ ] **Responsive design** — Mobile-first
+- [x] **Responsive design** — Mobile-first
 - [ ] Tests (target: 350+ total)
 
 ---
