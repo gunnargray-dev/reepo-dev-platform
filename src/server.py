@@ -65,6 +65,7 @@ def create_app(db_path: str | None = None) -> FastAPI:
     from src.api.scheduler import router as scheduler_router
     from src.api.recommendations import router as recommendations_router
     from src.api.changelog import router as changelog_router
+    from src.api.seo import router as seo_router
 
     application.include_router(search_router)
     application.include_router(repos_router)
@@ -87,6 +88,7 @@ def create_app(db_path: str | None = None) -> FastAPI:
     application.include_router(scheduler_router)
     application.include_router(recommendations_router)
     application.include_router(changelog_router)
+    application.include_router(seo_router)
 
     @application.on_event("startup")
     def startup():
