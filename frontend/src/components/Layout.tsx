@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SearchBar from './SearchBar';
+import NewsletterForm from './NewsletterForm';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ export default function Layout({ children }: LayoutProps) {
     { to: '/search', label: 'Search' },
     { to: '/trending', label: 'Trending' },
     { to: '/category/frameworks', label: 'Categories' },
+    { to: '/pricing', label: 'Pricing' },
   ];
 
   return (
@@ -68,12 +70,17 @@ export default function Layout({ children }: LayoutProps) {
       <main className="flex-1">{children}</main>
       <footer className="border-t border-border-subtle py-8 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-            <div className="flex items-center gap-2">
-              <span className="bg-accent rounded w-5 h-5 flex items-center justify-center text-white font-mono text-xs">R</span>
-              <span>Reepo.dev</span>
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="bg-accent rounded w-5 h-5 flex items-center justify-center text-white font-mono text-xs">R</span>
+                  <span className="text-sm text-gray-400">Reepo.dev</span>
+                </div>
+                <p className="text-sm text-gray-500">Open source discovery engine for AI repos</p>
+              </div>
+              <NewsletterForm />
             </div>
-            <div>Open source discovery engine for AI repos</div>
           </div>
         </div>
       </footer>

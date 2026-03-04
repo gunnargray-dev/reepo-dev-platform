@@ -43,6 +43,15 @@ def api_get_repo(owner: str, name: str):
     if not repo:
         raise HTTPException(status_code=404, detail="Repo not found")
 
+    from src.monetization.affiliates import get_affiliate_link
+    affiliate = get_affiliate_link(repo["id"], path=db_path)
+    if affiliate:
+        repo["affiliate_link"] = {
+            "provider": affiliate["provider"],
+            "url": affiliate["url"],
+            "link_id": affiliate["id"],
+        }
+
     detail_cache.set(cache_key, repo, ttl=900)
     return repo
 

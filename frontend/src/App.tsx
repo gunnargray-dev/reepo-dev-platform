@@ -5,6 +5,8 @@ import Search from './pages/Search';
 import RepoDetail from './pages/RepoDetail';
 import Category from './pages/Category';
 import Trending from './pages/Trending';
+import Pricing from './pages/Pricing';
+import Compare from './pages/Compare';
 
 export default function App() {
   return (
@@ -15,6 +17,8 @@ export default function App() {
         <Route path="/repo/:owner/:name" element={<RepoDetail />} />
         <Route path="/category/:slug" element={<Category />} />
         <Route path="/trending" element={<Trending />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/compare" element={<Compare />} />
       </Routes>
     </Layout>
   );

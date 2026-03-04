@@ -118,6 +118,41 @@ def cmd_search(args):
             print(f"       {desc}")
 
 
+def cmd_newsletter(args):
+    import json
+    from src.db import init_db
+    from src.monetization.db import init_monetization_db
+    from src.monetization.newsletter import build_weekly_digest
+
+    init_db(args.db)
+    init_monetization_db(args.db)
+    digest = build_weekly_digest(args.db)
+
+    print(f"=== {digest['title']} ===")
+    print(f"Subscribers: {digest['subscriber_count']}\n")
+
+    if digest["trending"]:
+        print("Top repos:")
+        for repo in digest["trending"]:
+            score = repo.get("reepo_score", "?")
+            stars = repo.get("stars", 0)
+            print(f"  [{score}] {repo['full_name']} \u2605{stars}")
+        print()
+
+    if digest["new_repos"]:
+        print("New this week:")
+        for repo in digest["new_repos"]:
+            print(f"  {repo['full_name']} — {repo.get('description', '')[:60]}")
+        print()
+
+    if digest["sponsor"]:
+        print(f"Sponsor: {digest['sponsor'].get('sponsor_name', 'N/A')}")
+
+    if args.json:
+        print("\n--- JSON ---")
+        print(json.dumps(digest, indent=2))
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="reepo",
@@ -160,6 +195,12 @@ def main():
     search_parser.add_argument("--sort", type=str, default="relevance", help="Sort: relevance, stars, score, newest")
     search_parser.add_argument("--limit", type=int, default=20, help="Max results")
     search_parser.set_defaults(func=cmd_search)
+
+    # newsletter
+    newsletter_parser = subparsers.add_parser("newsletter", help="Generate newsletter digest")
+    newsletter_parser.add_argument("--db", type=str, default=DEFAULT_DB, help="Database path")
+    newsletter_parser.add_argument("--json", action="store_true", help="Output raw JSON")
+    newsletter_parser.set_defaults(func=cmd_newsletter)
 
     args = parser.parse_args()
 
