@@ -68,6 +68,18 @@ export default function RepoDetail() {
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
           </a>
           {repo.homepage && <a href={repo.homepage} target="_blank" rel="noopener noreferrer" className="btn-secondary text-sm">Website</a>}
+          {(repo as any).affiliate_link && (
+            <a
+              href={(repo as any).affiliate_link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-score-green/10 border border-score-green/30 text-score-green hover:bg-score-green/20 font-medium px-4 py-2 rounded-lg transition-colors text-sm inline-flex items-center gap-1"
+              onClick={() => fetch(`/api/sponsors/click/${(repo as any).affiliate_link.link_id}`, { method: 'POST' }).catch(() => {})}
+            >
+              Try hosted version
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+            </a>
+          )}
         </div>
       </div>
 

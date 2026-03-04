@@ -8,6 +8,7 @@ from src.db import init_db, DEFAULT_DB_PATH
 from src.search import init_fts
 from src.trending import init_trending_tables
 from src.middleware import RateLimiter
+from src.monetization.db import init_monetization_db
 
 _db_path: str = DEFAULT_DB_PATH
 
@@ -44,18 +45,29 @@ def create_app(db_path: str | None = None) -> FastAPI:
     from src.api.categories import router as categories_router
     from src.api.trending import router as trending_router
     from src.api.stats import router as stats_router
+    from src.api.sponsors import router as sponsors_router
+    from src.api.billing import router as billing_router
+    from src.api.comparison import router as comparison_router
+    from src.api.export import router as export_router
+    from src.api.newsletter import router as newsletter_router
 
     application.include_router(search_router)
     application.include_router(repos_router)
     application.include_router(categories_router)
     application.include_router(trending_router)
     application.include_router(stats_router)
+    application.include_router(sponsors_router)
+    application.include_router(billing_router)
+    application.include_router(comparison_router)
+    application.include_router(export_router)
+    application.include_router(newsletter_router)
 
     @application.on_event("startup")
     def startup():
         init_db(_db_path)
         init_fts(_db_path)
         init_trending_tables(_db_path)
+        init_monetization_db(_db_path)
 
     @application.get("/api/health")
     def health():
