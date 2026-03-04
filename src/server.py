@@ -11,6 +11,7 @@ from src.middleware import RateLimiter
 from src.monetization.db import init_monetization_db
 from src.analytics import init_analytics_db
 from src.community.contributors import init_contributor_db
+from src.community.db import init_community_db
 
 _db_path: str = DEFAULT_DB_PATH
 
@@ -56,6 +57,9 @@ def create_app(db_path: str | None = None) -> FastAPI:
     from src.api.admin_analytics import router as admin_analytics_router
     from src.api.open_data import router as open_data_router
     from src.api.contributors import router as contributors_router
+    from src.api.community import router as community_router
+    from src.api.admin import router as admin_router
+    from src.api.blog import router as blog_router
 
     application.include_router(search_router)
     application.include_router(repos_router)
@@ -71,6 +75,9 @@ def create_app(db_path: str | None = None) -> FastAPI:
     application.include_router(admin_analytics_router)
     application.include_router(open_data_router)
     application.include_router(contributors_router)
+    application.include_router(community_router)
+    application.include_router(admin_router)
+    application.include_router(blog_router)
 
     @application.on_event("startup")
     def startup():
@@ -80,6 +87,7 @@ def create_app(db_path: str | None = None) -> FastAPI:
         init_monetization_db(_db_path)
         init_analytics_db(_db_path)
         init_contributor_db(_db_path)
+        init_community_db(_db_path)
 
     @application.get("/api/health")
     def health():
