@@ -13,6 +13,8 @@ from src.analytics import init_analytics_db
 from src.community.contributors import init_contributor_db
 from src.community.db import init_community_db
 from src.growth.db import init_growth_db
+from src.auth.db import init_auth_db
+from src.collections.db import init_collections_db
 
 _db_path: str = DEFAULT_DB_PATH
 
@@ -66,6 +68,11 @@ def create_app(db_path: str | None = None) -> FastAPI:
     from src.api.recommendations import router as recommendations_router
     from src.api.changelog import router as changelog_router
     from src.api.seo import router as seo_router
+    from src.api.auth import router as auth_router
+    from src.api.collections import router as collections_router
+    from src.api.bookmarks import router as bookmarks_router
+    from src.api.users import router as users_router
+    from src.api.api_keys import router as api_keys_router
 
     application.include_router(search_router)
     application.include_router(repos_router)
@@ -89,6 +96,11 @@ def create_app(db_path: str | None = None) -> FastAPI:
     application.include_router(recommendations_router)
     application.include_router(changelog_router)
     application.include_router(seo_router)
+    application.include_router(auth_router)
+    application.include_router(collections_router)
+    application.include_router(bookmarks_router)
+    application.include_router(users_router)
+    application.include_router(api_keys_router)
 
     @application.on_event("startup")
     def startup():
@@ -100,6 +112,8 @@ def create_app(db_path: str | None = None) -> FastAPI:
         init_contributor_db(_db_path)
         init_community_db(_db_path)
         init_growth_db(_db_path)
+        init_auth_db(_db_path)
+        init_collections_db(_db_path)
 
     @application.get("/api/health")
     def health():
