@@ -107,7 +107,6 @@ class TestCompareEndpoint:
         db_path, ids = seeded_db
         _make_pro_user(1, db_path)
         resp = client.post("/api/compare?repo_ids=1,2,3,4,5,6&user_id=1")
-        # Either 400 (>5 repos) or 404 (repo not found) depending on count
         assert resp.status_code in (400, 404)
 
     def test_repo_not_found(self, client, seeded_db):

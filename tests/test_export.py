@@ -91,13 +91,13 @@ class TestExportSearch:
         assert resp.status_code == 200
         assert "text/csv" in resp.headers.get("content-type", "")
         content = resp.text
-        assert "full_name" in content  # CSV header
+        assert "full_name" in content
 
     def test_export_csv_has_rows(self, client, seeded_db):
         _make_pro_user(1, seeded_db)
         resp = client.get("/api/export/search?q=export&format=csv&user_id=1")
         lines = resp.text.strip().split("\n")
-        assert len(lines) >= 2  # Header + at least one row
+        assert len(lines) >= 2
 
     def test_export_empty_search(self, client, seeded_db):
         _make_pro_user(1, seeded_db)

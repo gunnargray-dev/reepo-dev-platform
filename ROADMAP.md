@@ -78,15 +78,15 @@ The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 
 ## Phase 6 — Monetization Infrastructure (Sessions 27–32)
 
-- [ ] **Sponsored listings** — Labeled placements + sponsor analytics dashboard
-- [ ] **Stripe integration** — Pro subscriptions ($9/mo or $79/yr)
-- [ ] **Pro feature gates** — Unlimited collections, comparison tool, export, no ads
-- [ ] **Comparison tool (Pro)** — Side-by-side repo comparison
-- [ ] **Export (Pro)** — JSON/CSV/PDF export
-- [ ] **Affiliate link system** — "Try hosted version" buttons with tracking
-- [ ] **Newsletter sponsorship** — Subscriber mgmt, sponsor slots, booking system
-- [ ] **Tiered API access** — Free/Pro/Enterprise with usage metering
-- [ ] Tests (target: 800+ total)
+- [x] **Sponsored listings** — Labeled placements + sponsor analytics dashboard
+- [x] **Stripe integration** — Pro subscriptions ($9/mo or $79/yr)
+- [x] **Pro feature gates** — Unlimited collections, comparison tool, export, no ads
+- [x] **Comparison tool (Pro)** — Side-by-side repo comparison
+- [x] **Export (Pro)** — JSON/CSV/PDF export
+- [x] **Affiliate link system** — "Try hosted version" buttons with tracking
+- [x] **Newsletter sponsorship** — Subscriber mgmt, sponsor slots, booking system
+- [x] **Tiered API access** — Free/Pro/Enterprise with usage metering
+- [x] Tests (target: 800+ total) — 533 tests passing
 
 ---
 
