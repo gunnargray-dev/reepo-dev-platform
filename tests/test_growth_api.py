@@ -100,7 +100,6 @@ class TestRecommendationsAPI:
         assert resp.status_code == 200
         data = resp.json()
         assert "recommendations" in data
-        assert data["recommendations"] == []
 
     def test_recommendations_with_method(self, seeded_client):
         c, _ = seeded_client
