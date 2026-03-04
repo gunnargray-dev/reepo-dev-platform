@@ -94,7 +94,7 @@
 ## Session 5 — Phase 8 Platform Maturity
 **Date:** 2026-03-04
 **Phase:** 8
-**PR:** [#7](https://github.com/gunnargray-dev/reepo-dev-platform/pull/7) (squash-merged)
+**PR:** [#8](https://github.com/gunnargray-dev/reepo-dev-platform/pull/8) (squash-merged)
 **What shipped:**
 - `src/analytics.py` — Analytics pipeline with page_views and search_queries tables, IP hashing for privacy, conversion funnel (visits → searches → repo views → saves → signups → pro upgrades)
 - `src/cache.py` — Thread-safe LRU cache with OrderedDict, per-entry TTL, hit/miss stats, prefix invalidation, cache warming strategy
