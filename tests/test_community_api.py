@@ -287,3 +287,66 @@ class TestBlogAPI:
         resp = c.get("/api/blog/rss")
         assert resp.status_code == 200
         assert "<item>" not in resp.text
+
+
+# --- Comment Validation API ---
+
+class TestCommentValidationAPI:
+    def test_empty_body_rejected(self, seeded_client):
+        c, _ = seeded_client
+        resp = c.post("/api/repos/org1/repo1/comments", json={
+            "user_id": 1, "body": "",
+        })
+        assert resp.status_code == 422  # Pydantic min_length=1
+
+    def test_whitespace_body_rejected(self, seeded_client):
+        c, _ = seeded_client
+        resp = c.post("/api/repos/org1/repo1/comments", json={
+            "user_id": 1, "body": "   ",
+        })
+        # Pydantic allows whitespace but sanitize_comment_body catches it
+        assert resp.status_code == 400
+
+    def test_html_tags_stripped(self, seeded_client):
+        c, path = seeded_client
+        resp = c.post("/api/repos/org1/repo1/comments", json={
+            "user_id": 1, "body": "<b>bold</b> text",
+        })
+        assert resp.status_code == 200
+        # Verify the stored comment has HTML stripped
+        from src.db import get_repo
+        from src.community.comments import get_comments
+        repo = get_repo("org1", "repo1", path=path)
+        comments = get_comments(repo["id"], path=path)
+        assert comments[0]["body"] == "bold text"
+
+    def test_overlength_body_rejected(self, seeded_client):
+        c, _ = seeded_client
+        resp = c.post("/api/repos/org1/repo1/comments", json={
+            "user_id": 1, "body": "x" * 10001,
+        })
+        assert resp.status_code == 422  # Pydantic max_length=10000
+
+    def test_empty_project_title_rejected(self, seeded_client):
+        c, _ = seeded_client
+        resp = c.post("/api/built-with", json={
+            "user_id": 1, "title": "", "description": "desc",
+            "url": "https://x.com", "repo_ids": [1],
+        })
+        assert resp.status_code == 422
+
+    def test_overlength_project_title_rejected(self, seeded_client):
+        c, _ = seeded_client
+        resp = c.post("/api/built-with", json={
+            "user_id": 1, "title": "x" * 201, "description": "desc",
+            "url": "https://x.com", "repo_ids": [1],
+        })
+        assert resp.status_code == 422
+
+    def test_overlength_project_description_rejected(self, seeded_client):
+        c, _ = seeded_client
+        resp = c.post("/api/built-with", json={
+            "user_id": 1, "title": "App", "description": "x" * 5001,
+            "url": "https://x.com", "repo_ids": [1],
+        })
+        assert resp.status_code == 422
