@@ -47,7 +47,7 @@ export default function Home() {
       <section className="px-4 py-20 sm:py-28">
         <div className="mx-auto max-w-2xl text-center">
           <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-5xl leading-[1.1]">
-            Find the best AI repos
+            Find the best AI repos<br />
             <span className="text-muted-foreground">before everyone else</span>
           </h1>
           <p className="mt-3 text-[15px] text-muted-foreground">
