@@ -146,7 +146,7 @@ export default function Search() {
             </div>
           ) : (
             <>
-              <div className="space-y-2">{repos.map((repo) => <RepoCard key={repo.id} repo={repo} />)}</div>
+              <div className="space-y-2">{repos.map((repo, i) => <RepoCard key={repo.id} repo={repo} index={i} />)}</div>
               <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
             </>
           )}

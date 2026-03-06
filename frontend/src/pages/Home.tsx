@@ -108,7 +108,7 @@ export default function Home() {
             </button>
           </div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {trending.map((repo) => <RepoCard key={repo.id} repo={repo} />)}
+            {trending.map((repo, i) => <RepoCard key={repo.id} repo={repo} index={i} />)}
           </div>
         </section>
       )}

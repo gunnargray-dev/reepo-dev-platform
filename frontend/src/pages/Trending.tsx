@@ -48,7 +48,7 @@ export default function Trending() {
           {trending.map((repo, index) => (
             <div key={repo.id} className="flex items-center gap-3">
               <span className="w-6 shrink-0 text-right font-mono text-[13px] tabular-nums text-muted-foreground">{index + 1}</span>
-              <div className="min-w-0 flex-1"><RepoCard repo={repo} showDelta={repo.star_delta} /></div>
+              <div className="min-w-0 flex-1"><RepoCard repo={repo} showDelta={repo.star_delta} index={index} /></div>
             </div>
           ))}
         </div>
@@ -58,7 +58,7 @@ export default function Trending() {
         <div className="mt-14">
           <h2 className="mb-4 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Recently indexed</h2>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {newRepos.map((repo) => <RepoCard key={repo.id} repo={repo} />)}
+            {newRepos.map((repo, i) => <RepoCard key={repo.id} repo={repo} index={i} />)}
           </div>
         </div>
       )}
