@@ -1,14 +1,14 @@
 """Reepo API — community endpoints: Built With, comments, submissions, digest."""
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 router = APIRouter()
 
 
 class SubmitProjectRequest(BaseModel):
     user_id: int
-    title: str
-    description: str
+    title: str = Field(..., min_length=1, max_length=200)
+    description: str = Field(..., min_length=1, max_length=5000)
     url: str
     repo_ids: list[int] = []
     screenshot_url: str | None = None
@@ -16,7 +16,7 @@ class SubmitProjectRequest(BaseModel):
 
 class AddCommentRequest(BaseModel):
     user_id: int
-    body: str
+    body: str = Field(..., min_length=1, max_length=10000)
     parent_id: int | None = None
 
 
@@ -102,13 +102,16 @@ def api_add_comment(owner: str, name: str, req: AddCommentRequest):
     repo = get_repo(owner, name, get_db_path())
     if not repo:
         raise HTTPException(404, "Repo not found")
-    comment_id = add_comment(
-        user_id=req.user_id,
-        repo_id=repo["id"],
-        body=req.body,
-        parent_id=req.parent_id,
-        path=get_db_path(),
-    )
+    try:
+        comment_id = add_comment(
+            user_id=req.user_id,
+            repo_id=repo["id"],
+            body=req.body,
+            parent_id=req.parent_id,
+            path=get_db_path(),
+        )
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
     return {"id": comment_id}
 
 

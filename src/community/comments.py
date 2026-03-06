@@ -1,7 +1,34 @@
 """Reepo comments — threaded comments on repos."""
 from __future__ import annotations
 
+import re
+
 from src.db import _connect, DEFAULT_DB_PATH
+
+MIN_COMMENT_LENGTH = 1
+MAX_COMMENT_LENGTH = 10_000
+
+
+def sanitize_comment_body(body: str) -> str:
+    """Validate and sanitize a comment body.
+
+    Strips HTML tags, enforces length limits, and rejects empty content.
+    Returns the sanitized body string.
+    Raises ValueError if the body is invalid.
+    """
+    if not isinstance(body, str):
+        raise ValueError("Comment body must be a string")
+    # Strip HTML tags
+    cleaned = re.sub(r"<[^>]*>", "", body)
+    # Strip leading/trailing whitespace
+    cleaned = cleaned.strip()
+    if len(cleaned) < MIN_COMMENT_LENGTH:
+        raise ValueError("Comment body must not be empty")
+    if len(cleaned) > MAX_COMMENT_LENGTH:
+        raise ValueError(
+            f"Comment body must not exceed {MAX_COMMENT_LENGTH} characters"
+        )
+    return cleaned
 
 
 def add_comment(
@@ -12,6 +39,7 @@ def add_comment(
     path: str = DEFAULT_DB_PATH,
 ) -> int:
     """Add a comment on a repo. Returns the comment id."""
+    body = sanitize_comment_body(body)
     conn = _connect(path)
     cur = conn.execute(
         "INSERT INTO comments (user_id, repo_id, body, parent_id) VALUES (?, ?, ?, ?)",
@@ -50,6 +78,7 @@ def get_comments(repo_id: int, limit: int = 50, path: str = DEFAULT_DB_PATH) -> 
 
 def update_comment(comment_id: int, user_id: int, body: str, path: str = DEFAULT_DB_PATH) -> bool:
     """Update a comment. Only the owner can update. Returns True if updated."""
+    body = sanitize_comment_body(body)
     conn = _connect(path)
     cur = conn.execute(
         "UPDATE comments SET body = ?, updated_at = CURRENT_TIMESTAMP "
