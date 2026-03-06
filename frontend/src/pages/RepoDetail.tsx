@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import type { Repo } from '../lib/api';
-import { getRepo, getSimilarRepos } from '../lib/api';
-import { formatNumber, timeAgo, languageColor, scoreColor } from '../lib/utils';
-import ScoreBadge from '../components/ScoreBadge';
-import RepoCard from '../components/RepoCard';
+import { Star, GitFork, ExternalLink, Copy, Check, AlertCircle } from 'lucide-react';
+import type { Repo } from '@/lib/api';
+import { getRepo, getSimilarRepos, getRepoReadme } from '@/lib/api';
+import { formatNumber, timeAgo, languageColor, scoreColorVar } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { RepoCard } from '@/components/repo-card';
+import { DimensionCell } from '@/components/dimension-bar';
+import { getUseCases } from '@/lib/use-cases';
 
-const DIMENSION_LABELS: Record<string, string> = {
+const DIMENSIONS: Record<string, string> = {
   maintenance_health: 'Maintenance',
   documentation_quality: 'Documentation',
   community_activity: 'Community',
@@ -19,126 +25,178 @@ export default function RepoDetail() {
   const { owner, name } = useParams<{ owner: string; name: string }>();
   const [repo, setRepo] = useState<Repo | null>(null);
   const [similar, setSimilar] = useState<Repo[]>([]);
+  const [readme, setReadme] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!owner || !name) return;
     setLoading(true);
-    document.title = `${owner}/${name} — Reepo.dev`;
+    setReadme(null);
+    document.title = `${owner}/${name} -- Reepo.dev`;
     Promise.allSettled([getRepo(owner, name), getSimilarRepos(owner, name)]).then(([rr, sr]) => {
       if (rr.status === 'fulfilled') setRepo(rr.value);
       if (sr.status === 'fulfilled') setSimilar(sr.value);
       setLoading(false);
     });
+    getRepoReadme(owner, name).then(setReadme).catch(() => {});
   }, [owner, name]);
 
   const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   };
 
   if (loading) return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="animate-pulse space-y-6"><div className="h-8 bg-bg-card rounded w-1/2" /><div className="h-4 bg-bg-card rounded w-3/4" /><div className="h-64 bg-bg-card rounded" /></div>
+    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-1/2" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="mt-4 h-48" />
+      </div>
     </div>
   );
 
   if (!repo) return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-      <h1 className="text-2xl font-bold text-white mb-4">Repo not found</h1>
-      <p className="text-gray-500 mb-6">{owner}/{name} is not in our index.</p>
-      <Link to="/search" className="btn-primary">Search repos</Link>
+    <div className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
+      <AlertCircle className="mx-auto h-10 w-10 text-muted-foreground" />
+      <h1 className="mt-4 text-xl font-semibold text-foreground">Repo not found</h1>
+      <p className="mt-1 text-[14px] text-muted-foreground">{owner}/{name} is not in our index.</p>
+      <Button asChild className="mt-4">
+        <Link to="/search">Search repos</Link>
+      </Button>
     </div>
   );
 
+  const scoreColor = scoreColorVar(repo.reepo_score);
+
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <div className="flex items-center gap-3">
-            <img src={`https://github.com/${repo.owner}.png?size=48`} alt={repo.owner} className="w-10 h-10 rounded-lg" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">{repo.full_name}</h1>
-          </div>
-          {repo.description && <p className="text-gray-400 mt-3 text-lg max-w-3xl">{repo.description}</p>}
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={handleShare} className="btn-secondary text-sm">{copied ? 'Copied!' : 'Share'}</button>
-          <a href={repo.url} target="_blank" rel="noopener noreferrer" className="btn-primary text-sm inline-flex items-center gap-1">
-            GitHub
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-          </a>
-          {repo.homepage && <a href={repo.homepage} target="_blank" rel="noopener noreferrer" className="btn-secondary text-sm">Website</a>}
-          {(repo as any).affiliate_link && (
-            <a
-              href={(repo as any).affiliate_link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-score-green/10 border border-score-green/30 text-score-green hover:bg-score-green/20 font-medium px-4 py-2 rounded-lg transition-colors text-sm inline-flex items-center gap-1"
-              onClick={() => fetch(`/api/sponsors/click/${(repo as any).affiliate_link.link_id}`, { method: 'POST' }).catch(() => {})}
-            >
-              Try hosted version
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-            </a>
+    <div className="mx-auto max-w-3xl animate-fade-in px-4 py-8 sm:px-6">
+      {/* Header */}
+      <div className="flex items-start gap-3">
+        <img
+          src={`https://github.com/${repo.owner}.png?size=40`}
+          alt=""
+          className="h-10 w-10 rounded-lg"
+        />
+        <div className="min-w-0">
+          <h1 className="text-xl font-semibold text-foreground truncate">{repo.full_name}</h1>
+          {repo.description && (
+            <p className="mt-1 text-[15px] leading-relaxed text-muted-foreground">{repo.description}</p>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-5 mt-6 flex-wrap text-sm text-gray-400">
+      {/* Actions */}
+      <div className="mt-4 flex items-center gap-2">
+        <Button asChild size="sm">
+          <a href={repo.url} target="_blank" rel="noopener noreferrer">
+            GitHub <ExternalLink className="ml-1.5 h-3 w-3" />
+          </a>
+        </Button>
+        {repo.homepage && (
+          <Button asChild variant="outline" size="sm">
+            <a href={repo.homepage} target="_blank" rel="noopener noreferrer">Website</a>
+          </Button>
+        )}
+        <Button variant="ghost" size="sm" onClick={handleShare}>
+          {copied ? <><Check className="mr-1.5 h-3 w-3" />Copied</> : <><Copy className="mr-1.5 h-3 w-3" />Share</>}
+        </Button>
+      </div>
+
+      {/* Meta */}
+      <div className="mt-5 flex flex-wrap items-center gap-4 text-[13px] text-muted-foreground">
         <span className="flex items-center gap-1">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/></svg>
-          <strong className="text-white">{formatNumber(repo.stars)}</strong> stars
+          <Star className="h-3.5 w-3.5" />
+          <strong className="font-medium text-foreground">{formatNumber(repo.stars)}</strong>
         </span>
         <span className="flex items-center gap-1">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75v-.878a2.25 2.25 0 111.5 0v.878a2.25 2.25 0 01-2.25 2.25h-1.5v2.128a2.251 2.251 0 11-1.5 0V8.5h-1.5A2.25 2.25 0 013.5 6.25v-.878a2.25 2.25 0 111.5 0zM5 3.25a.75.75 0 10-1.5 0 .75.75 0 001.5 0zm6.75.75a.75.75 0 10.75-.75.75.75 0 00-.75.75zM8 12.75a.75.75 0 10.75-.75.75.75 0 00-.75.75z"/></svg>
-          <strong className="text-white">{formatNumber(repo.forks)}</strong> forks
+          <GitFork className="h-3.5 w-3.5" />
+          <strong className="font-medium text-foreground">{formatNumber(repo.forks)}</strong>
         </span>
         <span>{formatNumber(repo.open_issues)} issues</span>
         {repo.license && <span>{repo.license}</span>}
         {repo.language && (
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: languageColor(repo.language) }} />
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: languageColor(repo.language) }} />
             {repo.language}
           </span>
         )}
-        {repo.created_at && <span>Created {timeAgo(repo.created_at)}</span>}
+        {repo.created_at && <span>{timeAgo(repo.created_at)}</span>}
       </div>
 
-      <div className="card p-6 mt-8">
-        <div className="flex items-center gap-4 mb-6">
-          <h2 className="text-lg font-semibold text-white">Reepo Score</h2>
-          <ScoreBadge score={repo.reepo_score} size="md" />
+      {/* Summary */}
+      {readme && (
+        <div className="mt-6">
+          <h2 className="mb-2 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">About</h2>
+          <p className="text-[14px] leading-relaxed text-foreground/80">{readme}</p>
         </div>
-        {repo.score_breakdown && (
-          <div className="space-y-3">
-            {Object.entries(repo.score_breakdown).map(([key, value]) => (
-              <div key={key} className="flex items-center gap-3">
-                <span className="text-sm text-gray-400 w-28 flex-shrink-0">{DIMENSION_LABELS[key] || key}</span>
-                <div className="flex-1 h-2.5 bg-bg-primary rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full transition-all duration-500 ${value >= 80 ? 'bg-score-green' : value >= 50 ? 'bg-score-yellow' : 'bg-score-red'}`} style={{ width: `${value}%` }} />
-                </div>
-                <span className={`text-sm font-mono w-8 text-right ${scoreColor(value)}`}>{value}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
 
+      {/* Score */}
+      <Card className="mt-8">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-2">
+            <div
+              className="text-5xl font-bold font-mono tabular-nums"
+              style={{ color: scoreColor }}
+            >
+              {repo.reepo_score ?? '--'}
+            </div>
+            <div className="text-[13px] text-muted-foreground leading-tight">
+              <div>Reepo</div>
+              <div>Score</div>
+            </div>
+          </div>
+          {repo.score_breakdown && (
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {Object.entries(repo.score_breakdown).map(([key, value]) => (
+                <DimensionCell key={key} label={DIMENSIONS[key] || key} value={value} />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Use Cases */}
+      {(() => {
+        const cases = getUseCases(repo.topics || [], repo.category_primary);
+        return cases.length > 0 ? (
+          <div className="mt-6">
+            <h2 className="mb-3 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Use cases</h2>
+            <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+              {cases.map((c) => (
+                <li key={c} className="flex items-start gap-2 text-[14px] text-foreground/80">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
+                  {c}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null;
+      })()}
+
+      {/* Topics */}
       {repo.topics && repo.topics.length > 0 && (
         <div className="mt-6">
-          <h2 className="text-lg font-semibold text-white mb-3">Topics</h2>
-          <div className="flex flex-wrap gap-2">
+          <h2 className="mb-3 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Topics</h2>
+          <div className="flex flex-wrap gap-1.5">
             {repo.topics.map((topic) => (
-              <Link key={topic} to={`/search?q=${encodeURIComponent(topic)}`}
-                className="text-xs px-3 py-1.5 rounded-full bg-accent/10 text-accent border border-accent/20 hover:bg-accent/20 transition-colors">{topic}</Link>
+              <Badge key={topic} variant="secondary" asChild>
+                <Link to={`/search?q=${encodeURIComponent(topic)}`}>{topic}</Link>
+              </Badge>
             ))}
           </div>
         </div>
       )}
 
+      {/* Similar */}
       {similar.length > 0 && (
         <div className="mt-12">
-          <h2 className="text-lg font-semibold text-white mb-4">Similar repos</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <h2 className="mb-4 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Similar repos</h2>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {similar.map((r) => <RepoCard key={r.id} repo={r} />)}
           </div>
         </div>

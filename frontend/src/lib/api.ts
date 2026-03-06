@@ -101,7 +101,7 @@ function buildUrl(path: string, params?: Record<string, string | number | undefi
 }
 
 export async function searchRepos(params: SearchParams): Promise<SearchResponse> {
-  return fetchJson<SearchResponse>(buildUrl('/search', {
+  const data = await fetchJson<{ results: Repo[]; total: number; page: number; pages: number }>(buildUrl('/search', {
     q: params.q,
     category: params.category,
     language: params.language,
@@ -110,6 +110,7 @@ export async function searchRepos(params: SearchParams): Promise<SearchResponse>
     page: params.page,
     per_page: params.limit,
   }));
+  return { repos: data.results, total: data.total, page: data.page, pages: data.pages };
 }
 
 export async function getRepo(owner: string, name: string): Promise<Repo> {
@@ -117,17 +118,35 @@ export async function getRepo(owner: string, name: string): Promise<Repo> {
 }
 
 export async function getCategories(): Promise<CategoryInfo[]> {
-  return fetchJson<CategoryInfo[]>(buildUrl('/categories'));
+  const data = await fetchJson<{ categories: CategoryInfo[] }>(buildUrl('/categories'));
+  return data.categories;
+}
+
+export interface TagInfo {
+  tag: string;
+  count: number;
+}
+
+export async function getCategoryTags(slug: string): Promise<TagInfo[]> {
+  const data = await fetchJson<{ tags: TagInfo[] }>(buildUrl(`/categories/${slug}/tags`));
+  return data.tags;
 }
 
 export async function getTrending(period: string = 'week', limit: number = 20): Promise<TrendingRepo[]> {
-  return fetchJson<TrendingRepo[]>(buildUrl('/trending', { period, limit }));
+  const data = await fetchJson<{ results: TrendingRepo[] }>(buildUrl('/trending', { period, limit }));
+  return data.results;
 }
 
 export async function getStats(): Promise<StatsResponse> {
   return fetchJson<StatsResponse>(buildUrl('/stats'));
 }
 
+export async function getRepoReadme(owner: string, name: string): Promise<string | null> {
+  const data = await fetchJson<{ readme: string | null }>(buildUrl(`/repos/${owner}/${name}/readme`));
+  return data.readme;
+}
+
 export async function getSimilarRepos(owner: string, name: string): Promise<Repo[]> {
-  return fetchJson<Repo[]>(buildUrl(`/repos/${owner}/${name}/similar`));
+  const data = await fetchJson<{ results: Repo[] }>(buildUrl(`/repos/${owner}/${name}/similar`));
+  return data.results;
 }

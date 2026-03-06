@@ -113,6 +113,15 @@ async def _fetch_page(
             logger.warning("Unprocessable query: %s", query)
             return [], 0
 
+        if response.status_code >= 500:
+            logger.warning(
+                "Server error %d (attempt %d), retrying in %d seconds",
+                response.status_code, attempt + 1, backoff,
+            )
+            await asyncio.sleep(backoff)
+            backoff *= 2
+            continue
+
         response.raise_for_status()
 
     logger.error("Exhausted retries for query: %s page %d", query, page)
@@ -201,28 +210,30 @@ async def crawl_all(
 ) -> int:
     """Crawl all topics and keywords, store in DB. Returns total new repos found."""
     init_db(db_path)
-    all_repos: dict[int, dict] = {}
+    seen_ids: set[int] = set()
+    new_count = 0
 
     for topic in TOPICS:
         logger.info("Crawling topic: %s", topic)
         repos = await crawl_topic(topic, token, db_path)
         for repo in repos:
             gid = repo["github_id"]
-            if gid not in all_repos:
-                all_repos[gid] = repo
+            if gid not in seen_ids:
+                seen_ids.add(gid)
+                upsert_repo(repo, db_path)
+                new_count += 1
+        logger.info("  %s: +%d repos (total: %d)", topic, len(repos), new_count)
 
     for keyword in KEYWORDS:
         logger.info("Crawling keyword: %s", keyword)
         repos = await crawl_keyword(keyword, token, db_path)
         for repo in repos:
             gid = repo["github_id"]
-            if gid not in all_repos:
-                all_repos[gid] = repo
-
-    new_count = 0
-    for repo in all_repos.values():
-        upsert_repo(repo, db_path)
-        new_count += 1
+            if gid not in seen_ids:
+                seen_ids.add(gid)
+                upsert_repo(repo, db_path)
+                new_count += 1
+        logger.info("  %s: +%d repos (total: %d)", keyword, len(repos), new_count)
 
     logger.info("Crawl complete: %d repos indexed", new_count)
     return new_count

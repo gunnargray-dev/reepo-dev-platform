@@ -31,7 +31,7 @@ The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 - [x] **Similar repos engine** — Jaccard similarity on topics, category, star range
 - [x] **API rate limiting & caching** — Per-IP rate limiting, TTL cache, ETag support
 - [x] **OpenAPI spec** — Auto-generated docs at /api/docs
-- [x] Tests (target: 250+ total) — 1329 tests passing
+- [x] Tests (target: 250+ total) — 413 tests passing
 
 ---
 
@@ -45,7 +45,7 @@ The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 - [x] **SEO infrastructure** — SSR/pre-rendering, OG tags, sitemap, structured data
 - [x] **OG share cards** — Dynamic 1200×630 PNG per repo
 - [x] **Responsive design** — Mobile-first
-- [x] Tests (target: 350+ total) — 1329 tests passing
+- [x] Tests (target: 350+ total) — 1,230 tests passing
 
 ---
 
@@ -59,7 +59,7 @@ The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 - [x] **Notifications** — In-app + email digest
 - [x] **API keys** — User-generated keys with usage tracking
 - [ ] **PostgreSQL migration**
-- [x] Tests (target: 500+ total) — 1329 tests passing
+- [x] Tests (target: 500+ total) — 1,230 tests passing
 
 ---
 
@@ -72,7 +72,7 @@ The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 - [x] **Submit a repo** — User-suggested repo additions
 - [x] **Admin dashboard** — Moderation, user mgmt, index health
 - [x] **Blog / content pages** — SEO articles from index data
-- [x] Tests (target: 650+ total) — 1329 tests passing
+- [x] Tests (target: 650+ total) — 1,230 tests passing
 
 ---
 
@@ -86,7 +86,7 @@ The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 - [x] **Affiliate link system** — "Try hosted version" buttons with tracking
 - [x] **Newsletter sponsorship** — Subscriber mgmt, sponsor slots, booking system
 - [x] **Tiered API access** — Free/Pro/Enterprise with usage metering
-- [x] Tests (target: 800+ total) — 1329 tests passing
+- [x] Tests (target: 800+ total) — 533 tests passing
 
 ---
 
@@ -100,7 +100,7 @@ The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 - [x] **Personalized recommendations** — Collaborative filtering
 - [x] **Changelog tracking** — Per-repo timeline of notable changes
 - [ ] **i18n** — Mandarin, Japanese, Spanish, Portuguese, Korean
-- [x] Tests (target: 950+ total) — 1329 tests passing
+- [x] Tests (target: 950+ total) — 1,230 tests passing
 
 ---
 
@@ -110,7 +110,7 @@ The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 - [x] **Analytics pipeline** — Page views, search queries, conversion funnel
 - [x] **Public stats page** — /stats with index growth over time
 - [x] **Contributor program** — Community moderators, contributors, verified authors with badges
-- [x] **Slack / Discord bot** — Search Reepo from chat
+- [ ] **Slack / Discord bot** — Search Reepo from chat
 - [x] **Reepo Score CI** — GitHub Action for PR checks
 - [x] **Open data export** — Monthly CC-BY CSV dump
-- [x] Tests — 1329 tests passing
+- [x] Tests — 651 tests passing

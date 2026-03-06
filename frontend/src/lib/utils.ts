@@ -22,58 +22,26 @@ export function timeAgo(dateStr: string | null): string {
   return `${years}y ago`;
 }
 
-export function scoreColor(score: number | null): string {
-  if (score === null) return 'text-gray-500';
-  if (score >= 80) return 'text-score-green';
-  if (score >= 50) return 'text-score-yellow';
-  return 'text-score-red';
+export function scoreColorVar(score: number | null): string {
+  if (score === null) return 'var(--fg-subtle)';
+  if (score >= 80) return 'var(--score-high)';
+  if (score >= 50) return 'var(--score-mid)';
+  return 'var(--score-low)';
 }
 
-export function scoreBgColor(score: number | null): string {
-  if (score === null) return 'bg-gray-800 text-gray-500';
-  if (score >= 80) return 'bg-score-green/15 text-score-green';
-  if (score >= 50) return 'bg-score-yellow/15 text-score-yellow';
-  return 'bg-score-red/15 text-score-red';
+export function scoreColor(score: number | null): React.CSSProperties {
+  return { color: scoreColorVar(score) };
 }
 
 const LANGUAGE_COLORS: Record<string, string> = {
-  Python: '#3572A5',
-  JavaScript: '#f1e05a',
-  TypeScript: '#3178c6',
-  Rust: '#dea584',
-  Go: '#00ADD8',
-  'C++': '#f34b7d',
-  C: '#555555',
-  Java: '#b07219',
-  'C#': '#178600',
-  Ruby: '#701516',
-  Swift: '#F05138',
-  Kotlin: '#A97BFF',
-  Jupyter: '#DA5B0B',
-  Scala: '#c22d40',
-  R: '#198CE7',
-  Lua: '#000080',
-  Shell: '#89e051',
+  Python: '#3572A5', JavaScript: '#f1e05a', TypeScript: '#3178c6',
+  Rust: '#dea584', Go: '#00ADD8', 'C++': '#f34b7d', C: '#555555',
+  Java: '#b07219', 'C#': '#178600', Ruby: '#701516', Swift: '#F05138',
+  Kotlin: '#A97BFF', Jupyter: '#DA5B0B', Scala: '#c22d40', R: '#198CE7',
+  Lua: '#000080', Shell: '#89e051',
 };
 
 export function languageColor(lang: string | null): string {
-  if (!lang) return '#6b7280';
-  return LANGUAGE_COLORS[lang] || '#6b7280';
-}
-
-const CATEGORY_EMOJI: Record<string, string> = {
-  frameworks: '🏗️',
-  'apis-sdks': '🔌',
-  agents: '🤖',
-  apps: '📱',
-  'tools-utilities': '🔧',
-  models: '🧠',
-  datasets: '📊',
-  infrastructure: '⚙️',
-  'skills-plugins': '🧩',
-  libraries: '📚',
-};
-
-export function categoryIcon(slug: string): string {
-  return CATEGORY_EMOJI[slug] || '📦';
+  if (!lang) return '#71717a';
+  return LANGUAGE_COLORS[lang] || '#71717a';
 }

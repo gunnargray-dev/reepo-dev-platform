@@ -1,9 +1,15 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import RepoCard from '../components/RepoCard';
-import Pagination from '../components/Pagination';
-import type { Repo, CategoryInfo, StatsResponse } from '../lib/api';
-import { searchRepos, getCategories, getStats } from '../lib/api';
+import { SlidersHorizontal } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Slider } from '@/components/ui/slider';
+import { RepoCard } from '@/components/repo-card';
+import { Pagination } from '@/components/pagination';
+import type { Repo, CategoryInfo, StatsResponse } from '@/lib/api';
+import { searchRepos, getCategories, getStats } from '@/lib/api';
 
 const SORT_OPTIONS = [
   { value: 'stars', label: 'Stars' },
@@ -32,7 +38,7 @@ export default function Search() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    document.title = q ? `"${q}" — Search — Reepo.dev` : 'Search — Reepo.dev';
+    document.title = q ? `"${q}" -- Search -- Reepo.dev` : 'Search -- Reepo.dev';
   }, [q]);
 
   useEffect(() => {
@@ -65,68 +71,82 @@ export default function Search() {
   }, [searchParams, setSearchParams]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="mx-auto max-w-5xl animate-fade-in px-4 py-8 sm:px-6">
+      <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">{q ? `Results for "${q}"` : 'All Repos'}</h1>
-          {!loading && <p className="text-sm text-gray-500 mt-1">{total} repos found</p>}
+          <h1 className="text-xl font-semibold text-foreground">{q ? `Results for "${q}"` : 'All Repos'}</h1>
+          {!loading && <p className="mt-0.5 font-mono text-[13px] tabular-nums text-muted-foreground">{total} repos</p>}
         </div>
-        <button className="lg:hidden btn-secondary text-sm" onClick={() => setSidebarOpen(!sidebarOpen)}>Filters</button>
+        <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}>
+          <SlidersHorizontal className="mr-2 h-3.5 w-3.5" />
+          Filters
+        </Button>
       </div>
 
       <div className="flex gap-8">
-        <aside className={`${sidebarOpen ? 'block' : 'hidden'} lg:block w-full lg:w-56 flex-shrink-0`}>
-          <div className="card p-4 space-y-6 sticky top-24">
-            <div>
-              <h3 className="text-sm font-medium text-gray-300 mb-3">Category</h3>
-              <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                <label className="flex items-center gap-2 text-sm text-gray-400 hover:text-white cursor-pointer">
-                  <input type="radio" name="category" checked={!category} onChange={() => updateParam('category', '')} className="accent-accent" /> All
-                </label>
-                {categories.map((cat) => (
-                  <label key={cat.slug} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white cursor-pointer">
-                    <input type="radio" name="category" checked={category === cat.slug} onChange={() => updateParam('category', cat.slug)} className="accent-accent" />
-                    {cat.name} <span className="text-gray-600 text-xs ml-auto">{cat.repo_count}</span>
+        <aside className={`${sidebarOpen ? 'block' : 'hidden'} w-full shrink-0 lg:block lg:w-48`}>
+          <Card className="sticky top-20">
+            <CardContent className="space-y-5 p-4">
+              <div>
+                <h3 className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Category</h3>
+                <div className="max-h-48 space-y-0.5 overflow-y-auto">
+                  <label className="flex cursor-pointer items-center gap-2 py-0.5 text-[13px] text-muted-foreground hover:text-foreground">
+                    <input type="radio" name="category" checked={!category} onChange={() => updateParam('category', '')} className="accent-foreground" /> All
                   </label>
-                ))}
+                  {categories.map((cat) => (
+                    <label key={cat.slug} className="flex cursor-pointer items-center gap-2 py-0.5 text-[13px] text-muted-foreground hover:text-foreground">
+                      <input type="radio" name="category" checked={category === cat.slug} onChange={() => updateParam('category', cat.slug)} className="accent-foreground" />
+                      <span className="truncate">{cat.name}</span>
+                      <span className="ml-auto font-mono text-[11px] text-muted-foreground">{cat.repo_count}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-300 mb-3">Language</h3>
-              <select value={language} onChange={(e) => updateParam('language', e.target.value)}
-                className="w-full bg-bg-primary border border-border-subtle rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-accent">
-                <option value="">All languages</option>
-                {languages.map((lang) => <option key={lang} value={lang}>{lang}</option>)}
-              </select>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-300 mb-3">Min Score: <span className="font-mono text-accent">{minScore}</span></h3>
-              <input type="range" min={0} max={100} step={5} value={minScore}
-                onChange={(e) => updateParam('min_score', e.target.value === '0' ? '' : e.target.value)} className="w-full accent-accent" />
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-300 mb-3">Sort by</h3>
-              <select value={sort} onChange={(e) => updateParam('sort', e.target.value)}
-                className="w-full bg-bg-primary border border-border-subtle rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-accent">
-                {SORT_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-              </select>
-            </div>
-          </div>
+              <div>
+                <h3 className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Language</h3>
+                <Select value={language || 'all'} onValueChange={(v) => updateParam('language', v === 'all' ? '' : v)}>
+                  <SelectTrigger className="h-8 text-[13px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    {languages.map((lang) => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <h3 className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                  Min score <span className="font-mono text-foreground">{minScore}</span>
+                </h3>
+                <Slider
+                  value={[minScore]}
+                  onValueChange={([v]) => updateParam('min_score', v === 0 ? '' : String(v))}
+                  min={0} max={100} step={5}
+                />
+              </div>
+              <div>
+                <h3 className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Sort</h3>
+                <Select value={sort} onValueChange={(v) => updateParam('sort', v)}>
+                  <SelectTrigger className="h-8 text-[13px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {SORT_OPTIONS.map((opt) => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
         </aside>
 
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           {loading ? (
-            <div className="space-y-3">{Array.from({ length: 8 }).map((_, i) => <div key={i} className="card p-5 h-24 animate-pulse" />)}</div>
+            <div className="space-y-2">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-[72px]" />)}</div>
           ) : repos.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="text-4xl mb-4">🔍</div>
-              <h3 className="text-xl font-semibold text-white mb-2">No repos found</h3>
-              <p className="text-gray-500 mb-6">Try a different search term or adjust your filters.</p>
-              <button onClick={() => navigate('/search')} className="btn-primary">Clear filters</button>
+            <div className="py-20 text-center">
+              <h3 className="text-lg font-medium text-foreground mb-1">No repos found</h3>
+              <p className="mb-4 text-[14px] text-muted-foreground">Try a different search or adjust filters.</p>
+              <Button onClick={() => navigate('/search')}>Clear filters</Button>
             </div>
           ) : (
             <>
-              <div className="space-y-3">{repos.map((repo) => <RepoCard key={repo.id} repo={repo} />)}</div>
+              <div className="space-y-2">{repos.map((repo) => <RepoCard key={repo.id} repo={repo} />)}</div>
               <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
             </>
           )}

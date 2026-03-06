@@ -1,4 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface Tier {
   name: string;
@@ -25,7 +29,7 @@ export default function Pricing() {
   const [tiers, setTiers] = useState<Tier[]>(FALLBACK_TIERS);
 
   useEffect(() => {
-    document.title = 'Pricing — Reepo.dev';
+    document.title = 'Pricing -- Reepo.dev';
     fetch('/api/pricing')
       .then((r) => r.json())
       .then((data) => { if (data.tiers) setTiers(data.tiers); })
@@ -33,38 +37,36 @@ export default function Pricing() {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div className="text-center mb-12">
-        <h1 className="text-3xl font-bold text-white mb-3">Simple, transparent pricing</h1>
-        <p className="text-gray-400 text-lg">Start free. Upgrade when you need more power.</p>
+    <div className="mx-auto max-w-2xl animate-fade-in px-4 py-16 sm:px-6">
+      <div className="mb-10 text-center">
+        <h1 className="text-xl font-semibold text-foreground">Pricing</h1>
+        <p className="mt-1 text-[14px] text-muted-foreground">Start free. Upgrade when you need more.</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {tiers.map((tier) => (
-          <div
-            key={tier.name}
-            className={`card p-8 flex flex-col ${tier.name === 'Pro' ? 'border-accent/50 ring-1 ring-accent/20' : ''}`}
-          >
-            <h2 className="text-xl font-bold text-white">{tier.name}</h2>
-            <div className="mt-4 mb-6">
-              <span className="text-4xl font-bold text-white">{tier.price}</span>
-              {tier.price_yearly && (
-                <span className="text-sm text-gray-400 ml-2">or {tier.price_yearly}</span>
-              )}
-            </div>
-            <ul className="space-y-3 flex-1">
-              {tier.features.map((f) => (
-                <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
-                  <svg className="w-4 h-4 text-score-green flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <button className={`mt-8 w-full py-3 rounded-lg font-medium transition-colors ${tier.name === 'Pro' ? 'bg-accent hover:bg-accent-hover text-white' : 'bg-bg-primary border border-border-subtle text-gray-300 hover:text-white'}`}>
-              {tier.name === 'Pro' ? 'Upgrade to Pro' : 'Current plan'}
-            </button>
-          </div>
+          <Card key={tier.name} className={tier.name === 'Pro' ? 'ring-1 ring-border' : ''}>
+            <CardContent className="flex flex-col p-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-[15px] font-semibold text-foreground">{tier.name}</h2>
+                {tier.name === 'Pro' && <Badge variant="secondary">Popular</Badge>}
+              </div>
+              <div className="mb-5 mt-4">
+                <span className="font-mono text-3xl font-semibold text-foreground">{tier.price}</span>
+                {tier.price_yearly && <span className="ml-1.5 text-[13px] text-muted-foreground">or {tier.price_yearly}</span>}
+              </div>
+              <ul className="flex-1 space-y-2.5">
+                {tier.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-[13px] text-muted-foreground">
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-foreground" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Button variant={tier.name === 'Pro' ? 'default' : 'outline'} className="mt-6 w-full">
+                {tier.name === 'Pro' ? 'Upgrade to Pro' : 'Current plan'}
+              </Button>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>

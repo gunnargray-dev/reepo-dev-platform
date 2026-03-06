@@ -1,10 +1,12 @@
+import { Button } from '@/components/ui/button';
+
 interface PaginationProps {
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
 }
 
-export default function Pagination({ page, totalPages, onPageChange }: PaginationProps) {
+export function Pagination({ page, totalPages, onPageChange }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   const pages: (number | '...')[] = [];
@@ -19,19 +21,28 @@ export default function Pagination({ page, totalPages, onPageChange }: Paginatio
   }
 
   return (
-    <div className="flex items-center justify-center gap-1 mt-8">
-      <button onClick={() => onPageChange(page - 1)} disabled={page <= 1}
-        className="px-3 py-2 text-sm rounded-lg border border-border-subtle text-gray-400 hover:text-white hover:border-border-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors">Prev</button>
+    <div className="mt-8 flex items-center justify-center gap-1">
+      <Button variant="ghost" size="sm" onClick={() => onPageChange(page - 1)} disabled={page <= 1} className="text-[13px]">
+        Prev
+      </Button>
       {pages.map((p, i) =>
         p === '...' ? (
-          <span key={`dots-${i}`} className="px-2 py-2 text-sm text-gray-500">...</span>
+          <span key={`dots-${i}`} className="px-1.5 text-[13px] text-muted-foreground">...</span>
         ) : (
-          <button key={p} onClick={() => onPageChange(p as number)}
-            className={`px-3 py-2 text-sm rounded-lg border transition-colors ${p === page ? 'border-accent bg-accent/10 text-accent' : 'border-border-subtle text-gray-400 hover:text-white hover:border-border-hover'}`}>{p}</button>
+          <Button
+            key={p}
+            variant={p === page ? 'default' : 'ghost'}
+            size="sm"
+            className="h-8 w-8 font-mono text-[13px]"
+            onClick={() => onPageChange(p as number)}
+          >
+            {p}
+          </Button>
         )
       )}
-      <button onClick={() => onPageChange(page + 1)} disabled={page >= totalPages}
-        className="px-3 py-2 text-sm rounded-lg border border-border-subtle text-gray-400 hover:text-white hover:border-border-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors">Next</button>
+      <Button variant="ghost" size="sm" onClick={() => onPageChange(page + 1)} disabled={page >= totalPages} className="text-[13px]">
+        Next
+      </Button>
     </div>
   );
 }

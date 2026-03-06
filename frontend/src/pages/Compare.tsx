@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { formatNumber, scoreColor } from '../lib/utils';
-import ScoreBadge from '../components/ScoreBadge';
+import { formatNumber, scoreColorVar } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScoreBadge } from '@/components/score-badge';
 
 interface CompareRepo {
   id: number;
@@ -26,7 +29,7 @@ export default function Compare() {
   const ids = params.get('ids') || '';
 
   useEffect(() => {
-    document.title = 'Compare repos — Reepo.dev';
+    document.title = 'Compare -- Reepo.dev';
     if (!ids) { setLoading(false); setError('Add ?ids=1,2,3 to compare repos'); return; }
     fetch(`/api/compare?repo_ids=${ids}&user_id=1`, { method: 'POST' })
       .then((r) => {
@@ -39,65 +42,73 @@ export default function Compare() {
       .finally(() => setLoading(false));
   }, [ids]);
 
-  if (loading) return <div className="max-w-6xl mx-auto px-4 py-12"><div className="animate-pulse h-64 bg-bg-card rounded" /></div>;
+  if (loading) return <div className="mx-auto max-w-4xl px-4 py-12"><Skeleton className="h-64" /></div>;
 
   if (error === 'pro_required') return (
-    <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-      <h1 className="text-2xl font-bold text-white mb-4">Pro feature</h1>
-      <p className="text-gray-400 mb-6">The comparison tool requires a Pro subscription.</p>
-      <Link to="/pricing" className="btn-primary">View pricing</Link>
+    <div className="mx-auto max-w-3xl animate-fade-in px-4 py-20 text-center">
+      <h1 className="text-xl font-semibold text-foreground mb-2">Pro feature</h1>
+      <p className="mb-4 text-[14px] text-muted-foreground">The comparison tool requires a Pro subscription.</p>
+      <Button asChild><Link to="/pricing">View pricing</Link></Button>
     </div>
   );
 
-  if (error) return <div className="max-w-4xl mx-auto px-4 py-20 text-center"><p className="text-gray-400">{error}</p></div>;
+  if (error) return (
+    <div className="mx-auto max-w-3xl px-4 py-20 text-center">
+      <p className="text-[14px] text-muted-foreground">{error}</p>
+    </div>
+  );
 
   const rows = [
     { label: 'Score', render: (r: CompareRepo) => <ScoreBadge score={r.reepo_score} size="sm" /> },
-    { label: 'Stars', render: (r: CompareRepo) => formatNumber(r.stars) },
-    { label: 'Forks', render: (r: CompareRepo) => formatNumber(r.forks) },
-    { label: 'Language', render: (r: CompareRepo) => r.language || '—' },
-    { label: 'License', render: (r: CompareRepo) => r.license || '—' },
-    { label: 'Issues', render: (r: CompareRepo) => formatNumber(r.open_issues) },
-    { label: 'Last Push', render: (r: CompareRepo) => r.pushed_at ? new Date(r.pushed_at).toLocaleDateString() : '—' },
-    { label: 'Category', render: (r: CompareRepo) => r.category_primary || '—' },
+    { label: 'Stars', render: (r: CompareRepo) => <span className="font-mono tabular-nums">{formatNumber(r.stars)}</span> },
+    { label: 'Forks', render: (r: CompareRepo) => <span className="font-mono tabular-nums">{formatNumber(r.forks)}</span> },
+    { label: 'Language', render: (r: CompareRepo) => r.language || '--' },
+    { label: 'License', render: (r: CompareRepo) => r.license || '--' },
+    { label: 'Issues', render: (r: CompareRepo) => <span className="font-mono tabular-nums">{formatNumber(r.open_issues)}</span> },
+    { label: 'Last Push', render: (r: CompareRepo) => r.pushed_at ? new Date(r.pushed_at).toLocaleDateString() : '--' },
+    { label: 'Category', render: (r: CompareRepo) => r.category_primary || '--' },
   ];
 
   const dimensions = ['maintenance_health', 'documentation_quality', 'community_activity', 'popularity', 'freshness', 'license_score'];
   const dimLabels: Record<string, string> = { maintenance_health: 'Maintenance', documentation_quality: 'Docs', community_activity: 'Community', popularity: 'Popularity', freshness: 'Freshness', license_score: 'License' };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-2xl font-bold text-white mb-6">Compare repos</h1>
+    <div className="mx-auto max-w-4xl animate-fade-in px-4 py-8 sm:px-6">
+      <h1 className="mb-6 text-xl font-semibold text-foreground">Compare</h1>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border-subtle">
-              <th className="text-left text-gray-400 py-3 pr-4 w-32"></th>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-28"></TableHead>
               {repos.map((r) => (
-                <th key={r.id} className="text-left text-white py-3 px-4 font-semibold">
-                  <Link to={`/repo/${r.full_name}`} className="hover:text-accent">{r.full_name}</Link>
-                </th>
+                <TableHead key={r.id}>
+                  <Link to={`/repo/${r.full_name}`} className="hover:underline underline-offset-2">{r.full_name}</Link>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {rows.map(({ label, render }) => (
-              <tr key={label} className="border-b border-border-subtle/50">
-                <td className="text-gray-400 py-3 pr-4 font-medium">{label}</td>
-                {repos.map((r) => <td key={r.id} className="text-gray-300 py-3 px-4">{render(r)}</td>)}
-              </tr>
+              <TableRow key={label}>
+                <TableCell className="font-medium text-muted-foreground">{label}</TableCell>
+                {repos.map((r) => <TableCell key={r.id}>{render(r)}</TableCell>)}
+              </TableRow>
             ))}
             {dimensions.map((dim) => (
-              <tr key={dim} className="border-b border-border-subtle/50">
-                <td className="text-gray-400 py-3 pr-4 font-medium">{dimLabels[dim] || dim}</td>
+              <TableRow key={dim}>
+                <TableCell className="font-medium text-muted-foreground">{dimLabels[dim] || dim}</TableCell>
                 {repos.map((r) => {
                   const val = r.score_breakdown?.[dim];
-                  return <td key={r.id} className={`py-3 px-4 font-mono ${val ? scoreColor(val) : 'text-gray-500'}`}>{val ?? '—'}</td>;
+                  return (
+                    <TableCell key={r.id} className="font-mono tabular-nums" style={val ? { color: scoreColorVar(val) } : { color: 'var(--fg-subtle)' }}>
+                      {val ?? '--'}
+                    </TableCell>
+                  );
                 })}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

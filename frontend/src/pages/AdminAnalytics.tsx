@@ -1,4 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { StatCard } from '@/components/stat-card';
 
 interface AnalyticsSummary {
   total_views: number;
@@ -16,7 +20,7 @@ export default function AdminAnalytics() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    document.title = 'Admin Analytics — Reepo.dev';
+    document.title = 'Analytics -- Reepo.dev';
     setLoading(true);
     fetch(`/api/admin/analytics?days=${days}`)
       .then((r) => r.json())
@@ -25,85 +29,78 @@ export default function AdminAnalytics() {
       .finally(() => setLoading(false));
   }, [days]);
 
-  if (loading) return <div className="max-w-5xl mx-auto px-4 py-12"><div className="animate-pulse h-96 bg-bg-card rounded" /></div>;
-  if (!data) return <div className="max-w-5xl mx-auto px-4 py-20 text-center text-gray-400">Could not load analytics</div>;
+  if (loading) return <div className="mx-auto max-w-3xl px-4 py-12"><Skeleton className="h-96" /></div>;
+  if (!data) return <div className="mx-auto max-w-3xl px-4 py-20 text-center text-muted-foreground">Could not load analytics</div>;
 
   const funnel = data.conversion_funnel;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold text-white">Admin Analytics</h1>
-        <div className="flex gap-2">
-          {[7, 30, 90].map((d) => (
-            <button key={d} onClick={() => setDays(d)}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${days === d ? 'bg-accent text-white' : 'bg-bg-card text-gray-400 hover:text-white'}`}>
-              {d}d
-            </button>
-          ))}
-        </div>
+    <div className="mx-auto max-w-3xl animate-fade-in px-4 py-8 sm:px-6">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-xl font-semibold text-foreground">Analytics</h1>
+        <Tabs value={String(days)} onValueChange={(v) => setDays(Number(v))}>
+          <TabsList>
+            <TabsTrigger value="7">7d</TabsTrigger>
+            <TabsTrigger value="30">30d</TabsTrigger>
+            <TabsTrigger value="90">90d</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-white">{data.total_views.toLocaleString()}</div>
-          <div className="text-xs text-gray-400">Total Views</div>
-        </div>
-        <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-white">{data.unique_visitors.toLocaleString()}</div>
-          <div className="text-xs text-gray-400">Unique Visitors</div>
-        </div>
-        <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-white">{funnel.searches.toLocaleString()}</div>
-          <div className="text-xs text-gray-400">Searches</div>
-        </div>
-        <div className="card p-4 text-center">
-          <div className="text-2xl font-bold text-white">{funnel.pro_upgrades}</div>
-          <div className="text-xs text-gray-400">Pro Upgrades</div>
-        </div>
+      <div className="mb-6 grid grid-cols-2 gap-2 md:grid-cols-4">
+        <StatCard label="Views" value={data.total_views.toLocaleString()} />
+        <StatCard label="Visitors" value={data.unique_visitors.toLocaleString()} />
+        <StatCard label="Searches" value={funnel.searches.toLocaleString()} />
+        <StatCard label="Pro" value={String(funnel.pro_upgrades)} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        <div className="card p-6">
-          <h3 className="text-sm font-semibold text-gray-400 mb-3">Top Pages</h3>
-          <div className="space-y-2">
-            {data.top_pages.slice(0, 10).map((p) => (
-              <div key={p.path} className="flex items-center justify-between text-sm">
-                <span className="text-gray-300 truncate">{p.path}</span>
-                <span className="text-white font-mono ml-2">{p.views}</span>
-              </div>
-            ))}
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Card>
+          <CardContent className="p-5">
+            <h3 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Top pages</h3>
+            <div className="space-y-1.5">
+              {data.top_pages.slice(0, 10).map((p) => (
+                <div key={p.path} className="flex items-center justify-between text-[13px]">
+                  <span className="truncate text-muted-foreground">{p.path}</span>
+                  <span className="ml-2 font-mono tabular-nums text-foreground">{p.views}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5">
+            <h3 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Top queries</h3>
+            <div className="space-y-1.5">
+              {data.top_search_queries.slice(0, 10).map((q) => (
+                <div key={q.query} className="flex items-center justify-between text-[13px]">
+                  <span className="truncate text-muted-foreground">{q.query}</span>
+                  <span className="ml-2 font-mono tabular-nums text-foreground">{q.count}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardContent className="p-5">
+          <h3 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Funnel</h3>
+          <div className="flex h-28 items-end gap-3">
+            {Object.entries(funnel).map(([step, value]) => {
+              const maxVal = Math.max(...Object.values(funnel), 1);
+              const height = Math.max(4, (value / maxVal) * 100);
+              return (
+                <div key={step} className="flex flex-1 flex-col items-center">
+                  <span className="mb-1 font-mono text-[11px] tabular-nums text-foreground">{value}</span>
+                  <div className="w-full rounded-sm bg-foreground/15" style={{ height: `${height}%` }} />
+                  <span className="mt-1.5 w-full truncate text-center text-[11px] text-muted-foreground">{step}</span>
+                </div>
+              );
+            })}
           </div>
-        </div>
-        <div className="card p-6">
-          <h3 className="text-sm font-semibold text-gray-400 mb-3">Top Search Queries</h3>
-          <div className="space-y-2">
-            {data.top_search_queries.slice(0, 10).map((q) => (
-              <div key={q.query} className="flex items-center justify-between text-sm">
-                <span className="text-gray-300 truncate">{q.query}</span>
-                <span className="text-white font-mono ml-2">{q.count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="card p-6">
-        <h3 className="text-sm font-semibold text-gray-400 mb-3">Conversion Funnel</h3>
-        <div className="flex items-end gap-4 h-32">
-          {Object.entries(funnel).map(([step, value]) => {
-            const maxVal = Math.max(...Object.values(funnel), 1);
-            const height = Math.max(4, (value / maxVal) * 100);
-            return (
-              <div key={step} className="flex-1 flex flex-col items-center">
-                <span className="text-xs text-white font-mono mb-1">{value}</span>
-                <div className="w-full bg-accent/60 rounded-t" style={{ height: `${height}%` }} />
-                <span className="text-xs text-gray-400 mt-1 truncate w-full text-center">{step}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
