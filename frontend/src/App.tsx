@@ -8,6 +8,7 @@ import Trending from '@/pages/Trending';
 import Pricing from '@/pages/Pricing';
 import Compare from '@/pages/Compare';
 import Stats from '@/pages/Stats';
+import Alternatives from '@/pages/Alternatives';
 import AdminAnalytics from '@/pages/AdminAnalytics';
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/compare" element={<Compare />} />
         <Route path="/stats" element={<Stats />} />
+        <Route path="/alternatives/:owner/:name" element={<Alternatives />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
       </Routes>
     </Layout>
