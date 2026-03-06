@@ -2,7 +2,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Star, GitFork, ExternalLink, Copy, Check, AlertCircle } from 'lucide-react';
 import type { Repo } from '@/lib/api';
-import { getRepo, getSimilarRepos, getRepoReadme } from '@/lib/api';
+import { getRepo, getSimilarRepos, getRepoReadme, getScoreHistory } from '@/lib/api';
+import type { ScoreHistoryEntry } from '@/lib/api';
 import { formatNumber, timeAgo, languageColor, scoreColorVar } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RepoCard } from '@/components/repo-card';
 import { DimensionCell } from '@/components/dimension-bar';
+import { ScoreSparkline } from '@/components/score-sparkline';
 import { getUseCases } from '@/lib/use-cases';
 
 const DIMENSIONS: Record<string, string> = {
@@ -28,6 +30,7 @@ export default function RepoDetail() {
   const [readme, setReadme] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [history, setHistory] = useState<ScoreHistoryEntry[]>([]);
 
   useEffect(() => {
     if (!owner || !name) return;
@@ -40,6 +43,7 @@ export default function RepoDetail() {
       setLoading(false);
     });
     getRepoReadme(owner, name).then(setReadme).catch(() => {});
+    getScoreHistory(owner, name).then(setHistory).catch(() => {});
   }, [owner, name]);
 
   const handleShare = () => {
@@ -195,6 +199,7 @@ export default function RepoDetail() {
                 ))}
               </div>
             )}
+            <ScoreSparkline data={history} />
           </div>
         </aside>
       </div>
@@ -222,6 +227,7 @@ export default function RepoDetail() {
                 ))}
               </div>
             )}
+            <ScoreSparkline data={history} />
           </CardContent>
         </Card>
       </div>
@@ -229,9 +235,17 @@ export default function RepoDetail() {
       {/* Similar */}
       {similar.length > 0 && (
         <div className="mt-12 pt-8 border-t border-border/50">
-          <h2 className="mb-4 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Similar repos</h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Similar repos</h2>
+            <Link
+              to={`/alternatives/${repo.owner}/${repo.name}`}
+              className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              View all alternatives &rarr;
+            </Link>
+          </div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {similar.map((r) => <RepoCard key={r.id} repo={r} />)}
+            {similar.slice(0, 4).map((r) => <RepoCard key={r.id} repo={r} />)}
           </div>
         </div>
       )}
