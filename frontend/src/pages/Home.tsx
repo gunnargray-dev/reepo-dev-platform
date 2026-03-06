@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CategoryCard } from '@/components/category-card';
 import { RepoCard } from '@/components/repo-card';
 import type { CategoryInfo, Repo, StatsResponse } from '@/lib/api';
-import { getCategories, getTrending, getStats } from '@/lib/api';
+import { getCategories, getTrending, getStats, searchRepos } from '@/lib/api';
 import { formatNumber } from '@/lib/utils';
 
 export default function Home() {
@@ -15,6 +15,7 @@ export default function Home() {
   const [trending, setTrending] = useState<Repo[]>([]);
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [categoryRepos, setCategoryRepos] = useState<Record<string, { full_name: string; reepo_score: number | null }[]>>({});
 
   useEffect(() => {
     document.title = 'Reepo.dev -- Discover Open Source AI';
@@ -26,15 +27,31 @@ export default function Home() {
     });
   }, []);
 
+  useEffect(() => {
+    if (categories.length === 0) return;
+    const fetchTopRepos = async () => {
+      const entries: Record<string, { full_name: string; reepo_score: number | null }[]> = {};
+      await Promise.allSettled(
+        categories.map(async (cat) => {
+          const res = await searchRepos({ category: cat.slug, sort: 'reepo_score', limit: 3 });
+          entries[cat.slug] = res.repos.map((r) => ({ full_name: r.full_name, reepo_score: r.reepo_score }));
+        })
+      );
+      setCategoryRepos(entries);
+    };
+    fetchTopRepos();
+  }, [categories]);
+
   return (
     <div className="animate-fade-in">
       <section className="px-4 py-20 sm:py-28">
         <div className="mx-auto max-w-2xl text-center">
           <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-5xl leading-[1.1]">
-            Discover open source AI
+            Find the best AI repos
+            <span className="text-muted-foreground">before everyone else</span>
           </h1>
           <p className="mt-3 text-[15px] text-muted-foreground">
-            Search, score, and explore the best AI repositories
+            Reepo scores {stats ? `${formatNumber(stats.total_repos)}+` : ''} open source AI projects on maintenance, docs, community, and more.
           </p>
           <div className="mt-8 flex justify-center">
             <Button
@@ -62,18 +79,19 @@ export default function Home() {
               <span>avg score <span className="font-mono tabular-nums">{stats.score_stats.avg_score}</span></span>
             </div>
           )}
+          <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-border to-transparent" />
         </div>
       </section>
 
       <section className="mx-auto max-w-5xl px-4 pb-14 sm:px-6">
         <h2 className="mb-4 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Categories</h2>
         {loading ? (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} className="h-11" />)}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
-            {categories.map((cat) => <CategoryCard key={cat.slug} category={cat} />)}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {categories.map((cat) => <CategoryCard key={cat.slug} category={cat} topRepos={categoryRepos[cat.slug]} />)}
           </div>
         )}
       </section>
