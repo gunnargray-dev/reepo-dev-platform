@@ -31,7 +31,7 @@ The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 - [x] **Similar repos engine** — Jaccard similarity on topics, category, star range
 - [x] **API rate limiting & caching** — Per-IP rate limiting, TTL cache, ETag support
 - [x] **OpenAPI spec** — Auto-generated docs at /api/docs
-- [x] Tests (target: 250+ total) — 413 tests passing
+- [x] Tests (target: 250+ total) — 1329 tests passing
 
 ---
 
@@ -42,37 +42,37 @@ The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 - [x] **Repo detail page** — Score breakdown, README preview, similar repos, share button
 - [x] **Category browse pages** — /category/{slug}
 - [x] **Trending page** — Daily/weekly/monthly tabs
-- [ ] **SEO infrastructure** — SSR/pre-rendering, OG tags, sitemap, structured data
-- [ ] **OG share cards** — Dynamic 1200×630 PNG per repo
+- [x] **SEO infrastructure** — SSR/pre-rendering, OG tags, sitemap, structured data
+- [x] **OG share cards** — Dynamic 1200×630 PNG per repo
 - [x] **Responsive design** — Mobile-first
-- [ ] Tests (target: 350+ total)
+- [x] Tests (target: 350+ total) — 1329 tests passing
 
 ---
 
 ## Phase 4 — User Accounts & Collections (Sessions 15–20)
 
-- [ ] **Auth system** — GitHub OAuth, JWT tokens
-- [ ] **Collections** — Named, public/private saved lists of repos
-- [ ] **Bookmarks** — Quick-save repos
-- [ ] **User profile pages** — /u/{username}
-- [ ] **Follow system** — Lightweight social layer
-- [ ] **Notifications** — In-app + email digest
-- [ ] **API keys** — User-generated keys with usage tracking
+- [x] **Auth system** — GitHub OAuth, JWT tokens
+- [x] **Collections** — Named, public/private saved lists of repos
+- [x] **Bookmarks** — Quick-save repos
+- [x] **User profile pages** — /u/{username}
+- [x] **Follow system** — Lightweight social layer
+- [x] **Notifications** — In-app + email digest
+- [x] **API keys** — User-generated keys with usage tracking
 - [ ] **PostgreSQL migration**
-- [ ] Tests (target: 500+ total)
+- [x] Tests (target: 500+ total) — 1329 tests passing
 
 ---
 
 ## Phase 5 — Community & "Built With" Showcase (Sessions 21–26)
 
-- [ ] **"Built With" submissions** — User-submitted projects using indexed repos
-- [ ] **Upvotes** — Community curation
-- [ ] **Comments** — Threaded, markdown, moderated
-- [ ] **Weekly digest** — Auto-generated newsletter + blog post + RSS
-- [ ] **Submit a repo** — User-suggested repo additions
-- [ ] **Admin dashboard** — Moderation, user mgmt, index health
-- [ ] **Blog / content pages** — SEO articles from index data
-- [ ] Tests (target: 650+ total)
+- [x] **"Built With" submissions** — User-submitted projects using indexed repos
+- [x] **Upvotes** — Community curation
+- [x] **Comments** — Threaded, markdown, moderated
+- [x] **Weekly digest** — Auto-generated newsletter + blog post + RSS
+- [x] **Submit a repo** — User-suggested repo additions
+- [x] **Admin dashboard** — Moderation, user mgmt, index health
+- [x] **Blog / content pages** — SEO articles from index data
+- [x] Tests (target: 650+ total) — 1329 tests passing
 
 ---
 
@@ -86,21 +86,21 @@ The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 - [x] **Affiliate link system** — "Try hosted version" buttons with tracking
 - [x] **Newsletter sponsorship** — Subscriber mgmt, sponsor slots, booking system
 - [x] **Tiered API access** — Free/Pro/Enterprise with usage metering
-- [x] Tests (target: 800+ total) — 533 tests passing
+- [x] Tests (target: 800+ total) — 1329 tests passing
 
 ---
 
 ## Phase 7 — Growth & Retention (Sessions 33–38)
 
-- [ ] **Automated daily crawl** — Discover + re-analyze repos on schedule
+- [x] **Automated daily crawl** — Discover + re-analyze repos on schedule
 - [ ] **GitHub App** — Real-time updates from repo owners
-- [ ] **Embeddable badges** — SVG Reepo Score badges for READMEs
+- [x] **Embeddable badges** — SVG Reepo Score badges for READMEs
 - [ ] **Chrome extension** — Reepo Score overlay on GitHub
-- [ ] **Awesome List import** — Bulk-import from awesome-* repos
-- [ ] **Personalized recommendations** — Collaborative filtering
-- [ ] **Changelog tracking** — Per-repo timeline of notable changes
+- [x] **Awesome List import** — Bulk-import from awesome-* repos
+- [x] **Personalized recommendations** — Collaborative filtering
+- [x] **Changelog tracking** — Per-repo timeline of notable changes
 - [ ] **i18n** — Mandarin, Japanese, Spanish, Portuguese, Korean
-- [ ] Tests (target: 950+ total)
+- [x] Tests (target: 950+ total) — 1329 tests passing
 
 ---
 
@@ -110,7 +110,7 @@ The foundation. Crawl, index, analyze, and store open source AI repos at scale.
 - [x] **Analytics pipeline** — Page views, search queries, conversion funnel
 - [x] **Public stats page** — /stats with index growth over time
 - [x] **Contributor program** — Community moderators, contributors, verified authors with badges
-- [ ] **Slack / Discord bot** — Search Reepo from chat
+- [x] **Slack / Discord bot** — Search Reepo from chat
 - [x] **Reepo Score CI** — GitHub Action for PR checks
 - [x] **Open data export** — Monthly CC-BY CSV dump
-- [x] Tests — 651 tests passing
+- [x] Tests — 1329 tests passing
