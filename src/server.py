@@ -73,6 +73,8 @@ def create_app(db_path: str | None = None) -> FastAPI:
     from src.api.bookmarks import router as bookmarks_router
     from src.api.users import router as users_router
     from src.api.api_keys import router as api_keys_router
+    from src.api.slack import router as slack_router
+    from src.api.discord import router as discord_router
 
     application.include_router(search_router)
     application.include_router(repos_router)
@@ -101,6 +103,8 @@ def create_app(db_path: str | None = None) -> FastAPI:
     application.include_router(bookmarks_router)
     application.include_router(users_router)
     application.include_router(api_keys_router)
+    application.include_router(slack_router)
+    application.include_router(discord_router)
 
     @application.on_event("startup")
     def startup():
