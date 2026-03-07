@@ -16,7 +16,7 @@ export function RepoCard({ repo, showDelta, index }: RepoCardProps) {
     <Link
       to={`/repo/${repo.owner}/${repo.name}`}
       className={`group flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-card px-4 py-3.5 transition-all duration-150 hover:border-border/80 hover:bg-accent/5 hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)] hover:-translate-y-px${index !== undefined ? ' animate-stagger-in' : ''}`}
-      style={{ animationDelay: index !== undefined ? `${index * 30}ms` : undefined }}
+      style={{ animationDelay: index !== undefined ? `${index * 20}ms` : undefined }}
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">

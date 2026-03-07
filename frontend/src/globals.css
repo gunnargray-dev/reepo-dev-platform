@@ -39,9 +39,9 @@
   --radius-lg: 0.625rem;
   --radius-xl: 0.75rem;
 
-  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-fade-in: fade-in 0.15s ease-out;
   --animate-slide-up: slide-up 0.3s ease-out;
-  --animate-stagger-in: stagger-in 0.25s ease-out both;
+  --animate-stagger-in: stagger-in 0.2s ease-out backwards;
 }
 
 :root {
@@ -99,6 +99,6 @@ body {
 }
 
 @keyframes stagger-in {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
