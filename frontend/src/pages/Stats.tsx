@@ -86,7 +86,7 @@ export default function Stats() {
   if (!stats) return <div className="mx-auto max-w-3xl px-4 py-20 text-center text-muted-foreground">Could not load stats</div>;
 
   return (
-    <div className="mx-auto max-w-3xl animate-fade-in px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <h1 className="text-xl font-semibold text-foreground">Index Stats</h1>
       <p className="mt-1 text-[14px] text-muted-foreground">Open data about the Reepo AI repo index</p>
 

@@ -47,7 +47,7 @@ export default function Alternatives() {
   );
 
   return (
-    <div className="mx-auto max-w-4xl animate-fade-in px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <h1 className="text-xl font-semibold text-foreground">
         Alternatives to{' '}
         <Link to={`/repo/${repo.owner}/${repo.name}`} className="underline underline-offset-2 hover:text-muted-foreground">

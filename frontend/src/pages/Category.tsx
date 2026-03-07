@@ -50,7 +50,7 @@ export default function Category() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl animate-fade-in px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <h1 className="text-xl font-semibold text-foreground">{category?.name || slug}</h1>
       {category?.description && <p className="mt-1 text-[14px] text-muted-foreground">{category.description}</p>}
       {!loading && <p className="mt-1 font-mono text-[13px] tabular-nums text-muted-foreground">{total} repos</p>}

@@ -42,7 +42,7 @@ export default function Pricing() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-2xl animate-fade-in px-4 py-16 sm:px-6">
+    <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6">
       <div className="mb-10 text-center">
         <h1 className="text-xl font-semibold text-foreground">Pricing</h1>
         <p className="mt-1 text-[14px] text-muted-foreground">Start free. Upgrade when you need more.</p>

@@ -35,7 +35,7 @@ export default function AdminAnalytics() {
   const funnel = data.conversion_funnel;
 
   return (
-    <div className="mx-auto max-w-3xl animate-fade-in px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-foreground">Analytics</h1>
         <Tabs value={String(days)} onValueChange={(v) => setDays(Number(v))}>

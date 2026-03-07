@@ -82,7 +82,7 @@ export default function RepoDetail() {
   const scoreColor = scoreColorVar(repo.reepo_score);
 
   return (
-    <div className="mx-auto max-w-5xl animate-fade-in px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <div className="flex gap-8">
         {/* Main content */}
         <div className="min-w-0 flex-1">
