@@ -45,7 +45,7 @@ export function DimensionCell({ label, value, compact }: DimensionCellProps) {
           {value}
         </span>
         {showTip && tooltip && (
-          <div className="absolute bottom-full left-0 z-10 mb-1 w-48 rounded-md bg-popover p-2 text-[11px] leading-snug text-popover-foreground shadow-md border border-border">
+          <div className="absolute bottom-full left-0 z-10 mb-1 w-48 rounded-md bg-popover p-2 text-[11px] leading-snug text-popover-foreground shadow-md border border-border/50">
             {tooltip}
           </div>
         )}
@@ -54,7 +54,7 @@ export function DimensionCell({ label, value, compact }: DimensionCellProps) {
   }
 
   return (
-    <div className="relative rounded-lg border border-border px-3 py-2.5">
+    <div className="relative rounded-lg border border-border/50 px-3 py-2.5">
       <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
         {label}
         {tooltip && (
@@ -75,7 +75,7 @@ export function DimensionCell({ label, value, compact }: DimensionCellProps) {
         {value}
       </div>
       {showTip && tooltip && (
-        <div className="absolute bottom-full left-0 z-10 mb-1 w-48 rounded-md bg-popover p-2 text-[11px] leading-snug text-popover-foreground shadow-md border border-border">
+        <div className="absolute bottom-full left-0 z-10 mb-1 w-48 rounded-md bg-popover p-2 text-[11px] leading-snug text-popover-foreground shadow-md border border-border/50">
           {tooltip}
         </div>
       )}

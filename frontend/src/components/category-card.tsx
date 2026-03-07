@@ -11,7 +11,7 @@ export function CategoryCard({ category, topRepos }: CategoryCardProps) {
   return (
     <Link
       to={`/category/${category.slug}`}
-      className="group flex flex-col rounded-lg border border-border bg-card px-4 py-3 transition-all duration-150 hover:border-border/80 hover:bg-accent/5 hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)]"
+      className="group flex flex-col rounded-lg border border-border/60 bg-card px-4 py-3 transition-all duration-150 hover:border-border/80 hover:bg-accent/5 hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)]"
     >
       <div className="flex items-center justify-between">
         <span className="text-[13px] font-medium text-foreground group-hover:underline underline-offset-2 truncate">
