@@ -3,7 +3,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Slider } from '@/components/ui/slider';
 import { RepoCard } from '@/components/repo-card';
 import { Pagination } from '@/components/pagination';
@@ -133,9 +132,7 @@ export default function Search() {
         </aside>
 
         <div className="min-w-0 flex-1">
-          {loading ? (
-            <div className="space-y-2">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-[72px]" />)}</div>
-          ) : repos.length === 0 ? (
+          {loading ? null : repos.length === 0 ? (
             <div className="py-20 text-center">
               <h3 className="text-lg font-medium text-foreground mb-1">No repos found</h3>
               <p className="mb-4 text-[14px] text-muted-foreground">Try a different search or adjust filters.</p>

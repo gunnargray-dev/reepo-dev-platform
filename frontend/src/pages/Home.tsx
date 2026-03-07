@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { CategoryCard } from '@/components/category-card';
 import { RepoCard } from '@/components/repo-card';
 import type { CategoryInfo, Repo, StatsResponse } from '@/lib/api';
@@ -85,15 +84,9 @@ export default function Home() {
 
       <section className="mx-auto max-w-5xl px-4 pb-14 sm:px-6">
         <h2 className="mb-4 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Categories</h2>
-        {loading ? (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} className="h-11" />)}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {categories.map((cat) => <CategoryCard key={cat.slug} category={cat} topRepos={categoryRepos[cat.slug]} />)}
-          </div>
-        )}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {categories.map((cat) => <CategoryCard key={cat.slug} category={cat} topRepos={categoryRepos[cat.slug]} />)}
+        </div>
       </section>
 
       {trending.length > 0 && (

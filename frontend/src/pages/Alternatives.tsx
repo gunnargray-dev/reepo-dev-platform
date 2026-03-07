@@ -7,7 +7,6 @@ import { formatNumber, timeAgo, scoreColorVar, languageColor } from '@/lib/utils
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ScoreBadge } from '@/components/score-badge';
 
 export default function Alternatives() {
@@ -27,13 +26,7 @@ export default function Alternatives() {
     });
   }, [owner, name]);
 
-  if (loading) return (
-    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
-      <Skeleton className="h-8 w-2/3" />
-      <Skeleton className="mt-4 h-24" />
-      <Skeleton className="mt-6 h-64" />
-    </div>
-  );
+  if (loading) return null;
 
   if (!repo) return (
     <div className="mx-auto max-w-4xl px-4 py-20 text-center sm:px-6">

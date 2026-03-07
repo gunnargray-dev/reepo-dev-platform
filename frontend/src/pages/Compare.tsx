@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { formatNumber, scoreColorVar } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScoreBadge } from '@/components/score-badge';
 
@@ -42,7 +41,7 @@ export default function Compare() {
       .finally(() => setLoading(false));
   }, [ids]);
 
-  if (loading) return <div className="mx-auto max-w-4xl px-4 py-12"><Skeleton className="h-64" /></div>;
+  if (loading) return null;
 
   if (error === 'pro_required') return (
     <div className="mx-auto max-w-3xl px-4 py-20 text-center">

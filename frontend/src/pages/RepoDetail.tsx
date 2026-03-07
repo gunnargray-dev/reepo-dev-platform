@@ -8,7 +8,6 @@ import { formatNumber, timeAgo, languageColor, scoreColorVar } from '@/lib/utils
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { RepoCard } from '@/components/repo-card';
 import { DimensionCell } from '@/components/dimension-bar';
 import { ScoreSparkline } from '@/components/score-sparkline';
@@ -58,15 +57,7 @@ export default function RepoDetail() {
     [repo],
   );
 
-  if (loading) return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-1/2" />
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="mt-4 h-48" />
-      </div>
-    </div>
-  );
+  if (loading) return null;
 
   if (!repo) return (
     <div className="mx-auto max-w-5xl px-4 py-20 text-center sm:px-6">

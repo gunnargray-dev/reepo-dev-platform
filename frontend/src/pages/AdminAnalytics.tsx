@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StatCard } from '@/components/stat-card';
 
@@ -29,7 +28,7 @@ export default function AdminAnalytics() {
       .finally(() => setLoading(false));
   }, [days]);
 
-  if (loading) return <div className="mx-auto max-w-3xl px-4 py-12"><Skeleton className="h-96" /></div>;
+  if (loading) return null;
   if (!data) return <div className="mx-auto max-w-3xl px-4 py-20 text-center text-muted-foreground">Could not load analytics</div>;
 
   const funnel = data.conversion_funnel;
