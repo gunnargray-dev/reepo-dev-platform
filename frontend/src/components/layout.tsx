@@ -8,10 +8,6 @@ import { ThemeToggle } from '@/components/theme-toggle';
 
 const NAV_LINKS = [
   { to: '/search', label: 'Search' },
-  { to: '/trending', label: 'Trending' },
-  { to: '/category/frameworks', label: 'Categories' },
-  { to: '/stats', label: 'Stats' },
-  { to: '/pricing', label: 'Pricing' },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -87,7 +83,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <a href="/api/open-data/latest.csv" className="hover:text-foreground transition-colors">Open Data</a>
-              <Link to="/stats" className="hover:text-foreground transition-colors">Stats</Link>
             </div>
           </div>
         </div>

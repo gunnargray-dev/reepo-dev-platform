@@ -1,28 +1,21 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CategoryCard } from '@/components/category-card';
-import { RepoCard } from '@/components/repo-card';
-import type { CategoryInfo, Repo, StatsResponse } from '@/lib/api';
-import { getCategories, getTrending, getStats, searchRepos } from '@/lib/api';
+import type { CategoryInfo, StatsResponse } from '@/lib/api';
+import { getCategories, getStats, searchRepos } from '@/lib/api';
 import { formatNumber } from '@/lib/utils';
 
 export default function Home() {
-  const navigate = useNavigate();
   const [categories, setCategories] = useState<CategoryInfo[]>([]);
-  const [trending, setTrending] = useState<Repo[]>([]);
   const [stats, setStats] = useState<StatsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
   const [categoryRepos, setCategoryRepos] = useState<Record<string, { full_name: string; owner: string }[]>>({});
 
   useEffect(() => {
     document.title = 'Reepo.dev -- Discover Open Source AI';
-    Promise.allSettled([getCategories(), getTrending('week', 6), getStats()]).then(([catR, trendR, statsR]) => {
+    Promise.allSettled([getCategories(), getStats()]).then(([catR, statsR]) => {
       if (catR.status === 'fulfilled') setCategories(catR.value);
-      if (trendR.status === 'fulfilled') setTrending(trendR.value);
       if (statsR.status === 'fulfilled') setStats(statsR.value);
-      setLoading(false);
     });
   }, []);
 
@@ -42,9 +35,9 @@ export default function Home() {
   }, [categories]);
 
   return (
-    <div className="animate-fade-in">
+    <div>
       <section className="px-4 py-20 sm:py-28">
-        <div className="mx-auto max-w-2xl text-center">
+        <div className="mx-auto max-w-2xl text-center animate-slide-up">
           <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-5xl leading-[1.1]">
             Discover the best AI repos
           </h1>
@@ -81,26 +74,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-4 pb-14 sm:px-6">
-        <h2 className="mb-4 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Categories</h2>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
-          {categories.map((cat) => <CategoryCard key={cat.slug} category={cat} topRepos={categoryRepos[cat.slug]} />)}
-        </div>
-      </section>
-
-      {trending.length > 0 && (
-        <section className="mx-auto max-w-5xl px-4 pb-14 sm:px-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Trending this week</h2>
-            <button
-              onClick={() => navigate('/trending')}
-              className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              View all &rarr;
-            </button>
-          </div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {trending.map((repo) => <RepoCard key={repo.id} repo={repo} />)}
+      {categories.length > 0 && (
+        <section className="mx-auto max-w-5xl px-4 pb-14 sm:px-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <h2 className="mb-4 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Categories</h2>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
+            {categories.map((cat) => <CategoryCard key={cat.slug} category={cat} topRepos={categoryRepos[cat.slug]} />)}
           </div>
         </section>
       )}

@@ -191,6 +191,10 @@ def upsert_repo(repo: dict, path: str = DEFAULT_DB_PATH) -> int:
     existing = conn.execute(
         "SELECT id FROM repos WHERE github_id = ?", (repo.get("github_id"),)
     ).fetchone()
+    if not existing:
+        existing = conn.execute(
+            "SELECT id FROM repos WHERE full_name = ?", (repo.get("full_name"),)
+        ).fetchone()
     conn.close()
     if existing:
         update_repo(repo, path)
