@@ -16,6 +16,11 @@ export function RepoCard({ repo, showDelta }: RepoCardProps) {
       to={`/repo/${repo.owner}/${repo.name}`}
       className="group flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-card px-4 py-3.5 transition-all duration-150 hover:border-border/80 hover:bg-accent/5 hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)] hover:-translate-y-px"
     >
+      <img
+        src={`https://github.com/${repo.owner}.png?size=32`}
+        alt=""
+        className="h-8 w-8 shrink-0 rounded-md mt-0.5"
+      />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
           <h3 className="text-[15px] font-medium text-foreground group-hover:underline underline-offset-2 truncate">
