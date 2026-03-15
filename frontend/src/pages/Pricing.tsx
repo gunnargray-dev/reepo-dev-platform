@@ -32,12 +32,17 @@ export default function Pricing() {
     document.title = 'Pricing -- Reepo.dev';
     fetch('/api/pricing')
       .then((r) => r.json())
-      .then((data) => { if (data.tiers) setTiers(data.tiers); })
+      .then((data) => {
+        if (data.tiers) {
+          const t = Array.isArray(data.tiers) ? data.tiers : Object.values(data.tiers);
+          if (t.length) setTiers(t as Tier[]);
+        }
+      })
       .catch(() => {});
   }, []);
 
   return (
-    <div className="mx-auto max-w-2xl animate-fade-in px-4 py-16 sm:px-6">
+    <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6">
       <div className="mb-10 text-center">
         <h1 className="text-xl font-semibold text-foreground">Pricing</h1>
         <p className="mt-1 text-[14px] text-muted-foreground">Start free. Upgrade when you need more.</p>
@@ -51,8 +56,17 @@ export default function Pricing() {
                 {tier.name === 'Pro' && <Badge variant="secondary">Popular</Badge>}
               </div>
               <div className="mb-5 mt-4">
-                <span className="font-mono text-3xl font-semibold text-foreground">{tier.price}</span>
-                {tier.price_yearly && <span className="ml-1.5 text-[13px] text-muted-foreground">or {tier.price_yearly}</span>}
+                {tier.price.includes(' or ') ? (
+                  <>
+                    <span className="font-mono text-3xl font-semibold text-foreground">{tier.price.split(' or ')[0]}</span>
+                    <span className="ml-1.5 text-[13px] text-muted-foreground">or {tier.price.split(' or ')[1]}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-mono text-3xl font-semibold text-foreground">{tier.price}</span>
+                    {tier.price_yearly && <span className="ml-1.5 text-[13px] text-muted-foreground">or {tier.price_yearly}</span>}
+                  </>
+                )}
               </div>
               <ul className="flex-1 space-y-2.5">
                 {tier.features.map((f) => (

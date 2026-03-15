@@ -14,11 +14,16 @@ export function RepoCard({ repo, showDelta }: RepoCardProps) {
   return (
     <Link
       to={`/repo/${repo.owner}/${repo.name}`}
-      className="group flex items-start justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3.5 transition-colors hover:border-border/80 hover:bg-accent/5"
+      className="group flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-card px-4 py-3.5 transition-all duration-150 hover:border-border/80 hover:bg-accent/5 hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)] hover:-translate-y-px"
     >
+      <img
+        src={`https://github.com/${repo.owner}.png?size=32`}
+        alt=""
+        className="h-8 w-8 shrink-0 rounded-md mt-0.5"
+      />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="text-[14px] font-medium text-foreground group-hover:underline underline-offset-2 truncate">
+          <h3 className="text-[15px] font-medium text-foreground group-hover:underline underline-offset-2 truncate">
             {repo.full_name}
           </h3>
           {repo.category_primary && (
@@ -28,9 +33,9 @@ export function RepoCard({ repo, showDelta }: RepoCardProps) {
           )}
         </div>
         {repo.description && (
-          <p className="mt-1 text-[13px] text-muted-foreground line-clamp-1">{repo.description}</p>
+          <p className="mt-1.5 text-[13px] text-muted-foreground line-clamp-1">{repo.description}</p>
         )}
-        <div className="mt-2 flex items-center gap-3.5 text-[12px] text-muted-foreground">
+        <div className="mt-2.5 flex items-center gap-3.5 text-[12px] text-muted-foreground opacity-60 group-hover:opacity-100 transition-opacity">
           <span className="flex items-center gap-1">
             <Star className="h-3 w-3" />
             {formatNumber(repo.stars)}

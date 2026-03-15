@@ -150,3 +150,10 @@ export async function getSimilarRepos(owner: string, name: string): Promise<Repo
   const data = await fetchJson<{ results: Repo[] }>(buildUrl(`/repos/${owner}/${name}/similar`));
   return data.results;
 }
+
+export interface ScoreHistoryEntry { score: number; recorded_at: string; }
+
+export async function getScoreHistory(owner: string, name: string): Promise<ScoreHistoryEntry[]> {
+  const data = await fetchJson<{ history: ScoreHistoryEntry[] }>(buildUrl(`/repos/${owner}/${name}/history`));
+  return data.history;
+}

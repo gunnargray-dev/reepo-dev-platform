@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StatCard } from '@/components/stat-card';
 
@@ -29,13 +28,13 @@ export default function AdminAnalytics() {
       .finally(() => setLoading(false));
   }, [days]);
 
-  if (loading) return <div className="mx-auto max-w-3xl px-4 py-12"><Skeleton className="h-96" /></div>;
+  if (loading) return null;
   if (!data) return <div className="mx-auto max-w-3xl px-4 py-20 text-center text-muted-foreground">Could not load analytics</div>;
 
   const funnel = data.conversion_funnel;
 
   return (
-    <div className="mx-auto max-w-3xl animate-fade-in px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-foreground">Analytics</h1>
         <Tabs value={String(days)} onValueChange={(v) => setDays(Number(v))}>

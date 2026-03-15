@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RepoCard } from '@/components/repo-card';
 import type { TrendingRepo, Repo } from '@/lib/api';
@@ -25,7 +24,7 @@ export default function Trending() {
   }, [period]);
 
   return (
-    <div className="mx-auto max-w-3xl animate-fade-in px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <h1 className="text-xl font-semibold text-foreground mb-6">Trending</h1>
 
       <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)} className="mb-6">
@@ -36,9 +35,7 @@ export default function Trending() {
         </TabsList>
       </Tabs>
 
-      {loading ? (
-        <div className="space-y-2">{Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} className="h-[72px]" />)}</div>
-      ) : trending.length === 0 ? (
+      {loading ? null : trending.length === 0 ? (
         <div className="py-20 text-center">
           <h3 className="text-lg font-medium text-foreground mb-1">No trending data yet</h3>
           <p className="text-[14px] text-muted-foreground">Trending data appears after multiple crawl cycles.</p>

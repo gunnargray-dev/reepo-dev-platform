@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { formatNumber, scoreColorVar } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScoreBadge } from '@/components/score-badge';
 
@@ -42,10 +41,10 @@ export default function Compare() {
       .finally(() => setLoading(false));
   }, [ids]);
 
-  if (loading) return <div className="mx-auto max-w-4xl px-4 py-12"><Skeleton className="h-64" /></div>;
+  if (loading) return null;
 
   if (error === 'pro_required') return (
-    <div className="mx-auto max-w-3xl animate-fade-in px-4 py-20 text-center">
+    <div className="mx-auto max-w-3xl px-4 py-20 text-center">
       <h1 className="text-xl font-semibold text-foreground mb-2">Pro feature</h1>
       <p className="mb-4 text-[14px] text-muted-foreground">The comparison tool requires a Pro subscription.</p>
       <Button asChild><Link to="/pricing">View pricing</Link></Button>
@@ -73,7 +72,7 @@ export default function Compare() {
   const dimLabels: Record<string, string> = { maintenance_health: 'Maintenance', documentation_quality: 'Docs', community_activity: 'Community', popularity: 'Popularity', freshness: 'Freshness', license_score: 'License' };
 
   return (
-    <div className="mx-auto max-w-4xl animate-fade-in px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <h1 className="mb-6 text-xl font-semibold text-foreground">Compare</h1>
       <div className="overflow-x-auto">
         <Table>

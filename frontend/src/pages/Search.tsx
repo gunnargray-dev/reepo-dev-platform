@@ -2,9 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Slider } from '@/components/ui/slider';
 import { RepoCard } from '@/components/repo-card';
 import { Pagination } from '@/components/pagination';
@@ -71,7 +69,7 @@ export default function Search() {
   }, [searchParams, setSearchParams]);
 
   return (
-    <div className="mx-auto max-w-5xl animate-fade-in px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-foreground">{q ? `Results for "${q}"` : 'All Repos'}</h1>
@@ -85,11 +83,10 @@ export default function Search() {
 
       <div className="flex gap-8">
         <aside className={`${sidebarOpen ? 'block' : 'hidden'} w-full shrink-0 lg:block lg:w-48`}>
-          <Card className="sticky top-20">
-            <CardContent className="space-y-5 p-4">
+          <div className="sticky top-20 space-y-5">
               <div>
                 <h3 className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Category</h3>
-                <div className="max-h-48 space-y-0.5 overflow-y-auto">
+                <div className="space-y-0.5">
                   <label className="flex cursor-pointer items-center gap-2 py-0.5 text-[13px] text-muted-foreground hover:text-foreground">
                     <input type="radio" name="category" checked={!category} onChange={() => updateParam('category', '')} className="accent-foreground" /> All
                   </label>
@@ -131,14 +128,11 @@ export default function Search() {
                   </SelectContent>
                 </Select>
               </div>
-            </CardContent>
-          </Card>
+          </div>
         </aside>
 
         <div className="min-w-0 flex-1">
-          {loading ? (
-            <div className="space-y-2">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-[72px]" />)}</div>
-          ) : repos.length === 0 ? (
+          {loading ? null : repos.length === 0 ? (
             <div className="py-20 text-center">
               <h3 className="text-lg font-medium text-foreground mb-1">No repos found</h3>
               <p className="mb-4 text-[14px] text-muted-foreground">Try a different search or adjust filters.</p>

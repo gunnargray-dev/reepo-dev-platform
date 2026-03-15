@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { StatCard } from '@/components/stat-card';
 import { scoreColorVar } from '@/lib/utils';
 
@@ -82,11 +81,11 @@ export default function Stats() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="mx-auto max-w-3xl px-4 py-12"><Skeleton className="h-96" /></div>;
+  if (loading) return null;
   if (!stats) return <div className="mx-auto max-w-3xl px-4 py-20 text-center text-muted-foreground">Could not load stats</div>;
 
   return (
-    <div className="mx-auto max-w-3xl animate-fade-in px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <h1 className="text-xl font-semibold text-foreground">Index Stats</h1>
       <p className="mt-1 text-[14px] text-muted-foreground">Open data about the Reepo AI repo index</p>
 
