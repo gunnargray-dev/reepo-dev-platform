@@ -24,6 +24,7 @@ export interface Repo {
   has_wiki: boolean | number;
   homepage: string | null;
   indexed_at: string | null;
+  use_cases: string[] | null;
   star_delta?: number;
 }
 

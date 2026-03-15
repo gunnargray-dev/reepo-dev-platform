@@ -53,7 +53,11 @@ export default function RepoDetail() {
   };
 
   const useCases = useMemo(
-    () => (repo ? getUseCases(repo.topics || [], repo.category_primary) : []),
+    () => {
+      if (!repo) return [];
+      if (repo.use_cases && repo.use_cases.length > 0) return repo.use_cases;
+      return getUseCases(repo.topics || [], repo.category_primary);
+    },
     [repo],
   );
 
