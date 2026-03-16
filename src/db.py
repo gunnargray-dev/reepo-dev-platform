@@ -356,7 +356,7 @@ def get_score_stats(path: str = DEFAULT_DB_PATH) -> dict:
 
 def _row_to_dict(row: sqlite3.Row) -> dict:
     d = dict(row)
-    for key in ("topics", "categories_secondary", "score_breakdown", "use_cases"):
+    for key in ("topics", "categories_secondary", "score_breakdown"):
         if key in d and isinstance(d[key], str):
             try:
                 d[key] = json.loads(d[key])
