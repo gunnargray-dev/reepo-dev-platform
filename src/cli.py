@@ -153,6 +153,16 @@ def cmd_newsletter(args):
         print(json.dumps(digest, indent=2))
 
 
+def cmd_use_cases(args):
+    from src.use_case_extractor import extract_use_cases_batch
+
+    token = args.token or os.environ.get("GITHUB_TOKEN")
+    count = asyncio.run(extract_use_cases_batch(
+        db_path=args.db, batch_size=args.batch, github_token=token,
+    ))
+    print(f"Extracted use cases for {count} repos")
+
+
 def cmd_export_data(args):
     from src.db import init_db
     from src.open_data import generate_open_data_export
@@ -210,6 +220,13 @@ def main():
     newsletter_parser.add_argument("--db", type=str, default=DEFAULT_DB, help="Database path")
     newsletter_parser.add_argument("--json", action="store_true", help="Output raw JSON")
     newsletter_parser.set_defaults(func=cmd_newsletter)
+
+    # use-cases
+    uc_parser = subparsers.add_parser("use-cases", help="Extract use cases via Haiku LLM")
+    uc_parser.add_argument("--db", type=str, default=DEFAULT_DB, help="Database path")
+    uc_parser.add_argument("--token", type=str, help="GitHub API token")
+    uc_parser.add_argument("--batch", type=int, default=100, help="Batch size")
+    uc_parser.set_defaults(func=cmd_use_cases)
 
     # export-data
     export_parser = subparsers.add_parser("export-data", help="Generate open data CSV export")

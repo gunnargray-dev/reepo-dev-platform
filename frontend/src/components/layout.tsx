@@ -6,8 +6,10 @@ import { Separator } from '@/components/ui/separator';
 import { SearchCommand } from '@/components/search-command';
 import { ThemeToggle } from '@/components/theme-toggle';
 
+
 const NAV_LINKS = [
   { to: '/search', label: 'Search' },
+  { to: '/about', label: 'About' },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -82,6 +84,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <span>Open source discovery for AI</span>
             </div>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <Link to="/about" className="hover:text-foreground transition-colors">How Scoring Works</Link>
               <a href="/api/open-data/latest.csv" className="hover:text-foreground transition-colors">Open Data</a>
             </div>
           </div>

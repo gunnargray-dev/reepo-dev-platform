@@ -52,10 +52,13 @@ export default function RepoDetail() {
     });
   };
 
-  const useCases = useMemo(
-    () => (repo ? getUseCases(repo.topics || [], repo.category_primary) : []),
-    [repo],
-  );
+  const useCases = useMemo(() => {
+    if (!repo) return [];
+    const raw = repo.use_cases;
+    const cases = Array.isArray(raw) ? raw : (typeof raw === 'string' ? (() => { try { return JSON.parse(raw); } catch { return []; } })() : []);
+    if (cases.length > 0) return cases;
+    return getUseCases(repo.topics || [], repo.category_primary);
+  }, [repo]);
 
   if (loading) return null;
 

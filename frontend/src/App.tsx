@@ -10,6 +10,7 @@ import Compare from '@/pages/Compare';
 import Stats from '@/pages/Stats';
 import Alternatives from '@/pages/Alternatives';
 import AdminAnalytics from '@/pages/AdminAnalytics';
+import About from '@/pages/About';
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/compare" element={<Compare />} />
         <Route path="/stats" element={<Stats />} />
         <Route path="/alternatives/:owner/:name" element={<Alternatives />} />
+        <Route path="/about" element={<About />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
       </Routes>
     </Layout>

@@ -1,5 +1,6 @@
 """Reepo API — repo routes."""
 import base64
+import re
 import httpx
 from fastapi import APIRouter, HTTPException, Query
 
@@ -8,6 +9,161 @@ from src.similar import find_similar
 from src.middleware import detail_cache
 
 router = APIRouter()
+
+# Lines to skip entirely
+_SKIP_LINE = re.compile(
+    r"(^\s*[-*+]\s|"                    # bullet points
+    r"^\s*\d+\.\s|"                     # numbered lists
+    r"^>\s|"                            # blockquotes
+    r"^\|.*\||"                         # tables
+    r"^[-=]{3,}$|"                      # horizontal rules
+    r"^```|"                            # code blocks
+    r"^\[!|"                            # GitHub alerts
+    r"^!?\[|"                           # images and links at line start
+    r"^<|"                              # HTML tags
+    r"^<!--|"                           # comments
+    r"^Copyright|"                      # copyright notices
+    r"^Licensed under)"                 # license text
+)
+
+_NOISE_CONTENT = re.compile(
+    r"(translations?\.?\s|deutsch|español|français|日本語|한국어|中文|русский|"
+    r"português|العربية|हिन्दी|"
+    r"self.host|waitlist|join the|sign up|subscribe|join our team|"
+    r"getting started|quick start|how to install|"
+    r"system requirements|hardware requirements|prerequisites|"
+    r"table of contents|contributing|acknowledgments|"
+    r"follow .*on |discord\.gg|twitter\.com|telegram|"
+    r"\bNOTE\b|\bWARNING\b|"
+    r"npx |npm |pip |brew |docker run|curl |wget |"
+    r"requires? (?:node|python|docker)|"
+    r"try .* instantly|"
+    r"passionate about|hiring|careers|"
+    r"src=|href=|\.png|\.svg|\.gif|"
+    r"all rights reserved|apache license|mit license|"
+    r"polyform|licensed under|this .* is licensed|"
+    r"see .*for the full list|"
+    r"grateful .* support|sponsors|"
+    r"easy way for ai agents|through the cli$|"
+    r"can be installed using|before proceeding|"
+    r"you'll be prompted|connect .* to your|"
+    r"see the full .* documentation|all available commands|"
+    r"want to skip|skip the setup|use our cloud|"
+    r"backward compatible api for$|"
+    r"want to learn more|check out our|documentation for|"
+    r"get up and running with|"
+    r"create environment and|"
+    r"strives to abide|best practices in open.source|"
+    r"^\d+\.\s+\w+|"
+    r"this creates a |available templates|working example|"
+    r"^for machine learning\. it has)",
+    re.IGNORECASE,
+)
+
+# Patterns that indicate a real project description
+_DESCRIPTION_SIGNAL = re.compile(
+    r"\b(is a |is an |provides |enables |allows |makes it |designed to |"
+    r"helps you |lets you |platform for |framework for |library for |"
+    r"tool for |toolkit for |engine for |solution for |"
+    r"open.source |that (?:can|lets|helps|enables|allows|makes)|"
+    r"used to |built for |built to |written in )\b",
+    re.IGNORECASE,
+)
+
+
+def _clean_markdown_line(text: str) -> str:
+    """Strip markdown formatting from a single line."""
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)  # [text](url) -> text
+    text = re.sub(r'<[^>]+>', '', text)                     # HTML tags
+    text = re.sub(r'\*{1,2}(.+?)\*{1,2}', r'\1', text)     # bold/italic
+    text = re.sub(r'[`~]+', '', text)                       # code/strikethrough
+    text = re.sub(r'&nbsp;', ' ', text)                     # html entities
+    text = re.sub(r'\s+', ' ', text)                        # collapse whitespace
+    return text.strip()
+
+
+def _extract_readme_excerpt(content: str) -> str:
+    """Extract a clean introductory description from README markdown."""
+    lines = content.split("\n")
+    paragraphs: list[str] = []
+    current: list[str] = []
+    in_code_block = False
+
+    for line in lines[:150]:  # Only scan first ~150 lines
+        stripped = line.strip()
+
+        if stripped.startswith("```"):
+            in_code_block = not in_code_block
+            if current:
+                paragraphs.append(" ".join(current))
+                current = []
+            continue
+        if in_code_block:
+            continue
+
+        # Headings break paragraphs
+        if stripped.startswith("#"):
+            if current:
+                paragraphs.append(" ".join(current))
+                current = []
+            continue
+
+        # Empty line = paragraph break
+        if not stripped:
+            if current:
+                paragraphs.append(" ".join(current))
+                current = []
+            continue
+
+        # Skip non-prose lines
+        if _SKIP_LINE.match(stripped):
+            continue
+
+        cleaned = _clean_markdown_line(stripped)
+        if not cleaned or len(cleaned) < 10:
+            continue
+
+        current.append(cleaned)
+
+    if current:
+        paragraphs.append(" ".join(current))
+
+    # Score each paragraph and pick the best one
+    best = ""
+    best_score = -1
+
+    for para in paragraphs:
+        if _NOISE_CONTENT.search(para):
+            continue
+        if len(para) < 30:
+            continue
+
+        score = 0
+        # Strong signal: contains "is a", "provides", "framework for", etc.
+        if _DESCRIPTION_SIGNAL.search(para):
+            score += 10
+        # Prefer longer paragraphs (more informative)
+        score += min(len(para) // 30, 5)
+        # Prefer paragraphs with multiple sentences
+        score += min(para.count(". "), 3)
+        # Penalize very long paragraphs (likely grabbed too much)
+        if len(para) > 800:
+            score -= 3
+
+        if score > best_score:
+            best_score = score
+            best = para
+
+    if not best or best_score < 3:
+        return ""
+
+    # Trim to ~500 chars at sentence boundary
+    if len(best) > 500:
+        cut = best[:500].rfind(". ")
+        if cut > 200:
+            return best[:cut + 1]
+        return best[:497] + "..."
+    return best
 
 
 @router.get("/api/repos")
@@ -86,31 +242,16 @@ async def api_repo_readme(owner: str, name: str):
             resp = await client.get(url, headers={"Accept": "application/vnd.github+json"})
             if resp.status_code == 200:
                 data = resp.json()
-                import re
                 content = base64.b64decode(data.get("content", "")).decode("utf-8", errors="replace")
-                # Strip markdown to plain text excerpt
-                lines = []
-                for line in content.split("\n"):
-                    stripped = line.strip()
-                    # Skip empty, headings, images, HTML, tables, separators, badges
-                    if not stripped:
-                        continue
-                    if stripped.startswith(("#", "![", "<!--", "<", "|", "---", "===", "```")):
-                        continue
-                    if stripped.startswith("[!") or stripped.startswith("[!["):
-                        continue
-                    # Remove inline markdown: links, bold, italic, code, HTML tags
-                    cleaned = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', stripped)  # [text](url) -> text
-                    cleaned = re.sub(r'<a[^>]*>|</a>', '', cleaned)  # strip <a> tags
-                    cleaned = re.sub(r'<[^>]+>', '', cleaned)  # strip HTML tags
-                    cleaned = re.sub(r'[*_`~]+', '', cleaned)  # strip formatting chars
-                    cleaned = cleaned.strip()
-                    if not cleaned or len(cleaned) < 5:
-                        continue
-                    lines.append(cleaned)
-                    if len(" ".join(lines)) > 500:
-                        break
-                excerpt = " ".join(lines)[:500]
+                excerpt = _extract_readme_excerpt(content)
+                if not excerpt:
+                    # Fall back to repo description from DB
+                    desc_row = conn.execute(
+                        "SELECT description FROM repos WHERE owner = ? AND name = ?",
+                        (owner, name),
+                    ).fetchone()
+                    if desc_row:
+                        excerpt = desc_row["description"] or ""
                 # Cache in DB
                 conn.execute(
                     "UPDATE repos SET readme_excerpt = ? WHERE owner = ? AND name = ?",

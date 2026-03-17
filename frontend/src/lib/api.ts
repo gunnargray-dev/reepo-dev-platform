@@ -15,6 +15,7 @@ export interface Repo {
   categories_secondary: string[];
   reepo_score: number | null;
   score_breakdown: ScoreBreakdown | null;
+  use_cases: string[] | null;
   readme_excerpt: string | null;
   last_analyzed_at: string | null;
   created_at: string | null;
