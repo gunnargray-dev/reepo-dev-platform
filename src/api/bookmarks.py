@@ -30,6 +30,25 @@ def remove_bookmark_endpoint(repo_id: int, request: Request):
     return {"removed": True}
 
 
+@router.get("/check")
+def check_bookmarks_endpoint(request: Request, repo_ids: str = ""):
+    """Check which repo IDs are bookmarked by the current user."""
+    from src.server import get_db_path
+    from src.auth.middleware import require_auth
+
+    payload = require_auth(request)
+    user_id = payload["sub"]
+
+    ids = [int(x.strip()) for x in repo_ids.split(",") if x.strip().isdigit()]
+    if not ids:
+        return {"bookmarked": []}
+
+    from src.collections.db import get_bookmarks
+    bookmarks = get_bookmarks(user_id, get_db_path())
+    bookmarked_ids = {b["repo_id"] for b in bookmarks}
+    return {"bookmarked": [rid for rid in ids if rid in bookmarked_ids]}
+
+
 @router.get("")
 def list_bookmarks_endpoint(request: Request):
     from src.server import get_db_path

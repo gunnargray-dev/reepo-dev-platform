@@ -59,7 +59,12 @@ def _connect(path: str) -> sqlite3.Connection:
 def init_auth_db(path: str) -> None:
     conn = _connect(path)
     conn.executescript(AUTH_SCHEMA)
-    conn.commit()
+    # Migration: add supabase_id column if it doesn't exist yet
+    try:
+        conn.execute("ALTER TABLE users ADD COLUMN supabase_id TEXT UNIQUE")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass  # column already exists
     conn.close()
 
 
@@ -125,6 +130,56 @@ def update_user(user_id: int, path: str, **kwargs) -> bool:
     conn.commit()
     conn.close()
     return changed
+
+
+def get_or_create_user(
+    supabase_id: str,
+    email: str | None,
+    username: str | None,
+    avatar_url: str | None,
+    path: str,
+) -> dict:
+    """Find user by supabase_id, updating fields if changed. Create if not found."""
+    conn = _connect(path)
+    row = conn.execute(
+        "SELECT * FROM users WHERE supabase_id = ?", (supabase_id,)
+    ).fetchone()
+
+    if row:
+        user = dict(row)
+        updates = {}
+        if email is not None and email != user.get("email"):
+            updates["email"] = email
+        if username is not None and username != user.get("username"):
+            updates["username"] = username
+        if avatar_url is not None and avatar_url != user.get("avatar_url"):
+            updates["avatar_url"] = avatar_url
+        if updates:
+            sets = ", ".join(f"{k} = ?" for k in updates)
+            vals = list(updates.values()) + [user["id"]]
+            conn.execute(
+                f"UPDATE users SET {sets}, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                vals,
+            )
+            conn.commit()
+            # Re-fetch after update
+            row = conn.execute(
+                "SELECT * FROM users WHERE id = ?", (user["id"],)
+            ).fetchone()
+            user = dict(row)
+        conn.close()
+        return user
+
+    # Create new user
+    cur = conn.execute(
+        "INSERT INTO users (supabase_id, email, username, avatar_url) VALUES (?, ?, ?, ?)",
+        (supabase_id, email, username or supabase_id[:8], avatar_url),
+    )
+    new_id = cur.lastrowid
+    conn.commit()
+    row = conn.execute("SELECT * FROM users WHERE id = ?", (new_id,)).fetchone()
+    conn.close()
+    return dict(row)
 
 
 def delete_user(user_id: int, path: str) -> bool:

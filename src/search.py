@@ -20,14 +20,15 @@ def init_fts(path: str = DEFAULT_DB_PATH) -> None:
     conn = _connect(path)
     conn.execute(
         "CREATE VIRTUAL TABLE IF NOT EXISTS repos_fts USING fts5("
-        "full_name, description, readme_excerpt, topics_text"
+        "full_name, description, readme_excerpt, topics_text, use_cases_text"
         ")"
     )
     conn.execute("DELETE FROM repos_fts")
     conn.execute(
-        "INSERT INTO repos_fts(rowid, full_name, description, readme_excerpt, topics_text) "
+        "INSERT INTO repos_fts(rowid, full_name, description, readme_excerpt, topics_text, use_cases_text) "
         "SELECT id, full_name, COALESCE(description, ''), COALESCE(readme_excerpt, ''), "
-        "REPLACE(REPLACE(COALESCE(topics, '[]'), '[', ''), ']', '') FROM repos"
+        "REPLACE(REPLACE(COALESCE(topics, '[]'), '[', ''), ']', ''), "
+        "REPLACE(REPLACE(COALESCE(use_cases, '[]'), '[', ''), ']', '') FROM repos"
     )
     conn.commit()
     conn.close()
@@ -52,9 +53,6 @@ def search(
     per_page: int = 20,
 ) -> dict:
     """Search repos using FTS5 with filters, sorting, and pagination.
-
-    Uses a single JOIN against repos_fts for rank and snippets instead of
-    correlated subqueries, which is significantly faster on large tables.
 
     Returns: {"results": [...], "total": int, "page": int, "per_page": int, "pages": int}
     """
@@ -85,7 +83,6 @@ def search(
         count_clauses = ["repos_fts MATCH ?"] + [
             c.replace("repos.", "") for c in filter_clauses
         ]
-        # JOIN repos so we can filter on its columns
         count_sql = (
             "SELECT COUNT(*) AS cnt FROM repos "
             "INNER JOIN repos_fts ON repos_fts.rowid = repos.id "
@@ -99,25 +96,34 @@ def search(
 
     total = conn.execute(count_sql, count_params).fetchone()["cnt"]
 
+    # Accept multiple aliases for sort values
     sort_map = {
         "stars": "repos.stars DESC",
         "score": "repos.reepo_score DESC",
+        "reepo_score": "repos.reepo_score DESC",
         "newest": "repos.pushed_at DESC",
+        "pushed_at": "repos.pushed_at DESC",
+        "updated_at": "repos.pushed_at DESC",
+        "name": "repos.full_name ASC",
     }
 
     offset = (page - 1) * per_page
 
     if has_query:
-        # Single JOIN against repos_fts for MATCH, rank, and snippet in one pass.
         if sort == "relevance":
-            order_clause = "repos_fts.rank ASC"
+            # Hybrid ranking: blend FTS relevance with repo quality
+            # FTS rank is negative (closer to 0 = better match)
+            # We normalize and combine with reepo_score
+            order_clause = (
+                "(repos_fts.rank * -1.0 + COALESCE(repos.reepo_score, 0) * 0.5) DESC"
+            )
         else:
             order_clause = sort_map.get(sort, "repos.stars DESC")
 
         data_clauses = ["repos_fts MATCH ?"] + filter_clauses
         data_sql = (
             "SELECT repos.*, repos_fts.rank AS _fts_rank, "
-            "snippet(repos_fts, -1, '<b>', '</b>', '...', 32) AS _snippet "
+            "snippet(repos_fts, 1, '«', '»', '…', 40) AS _snippet "
             "FROM repos "
             "INNER JOIN repos_fts ON repos_fts.rowid = repos.id "
             f"WHERE {' AND '.join(data_clauses)} "
@@ -163,13 +169,14 @@ def _ensure_fts_exists(conn: sqlite3.Connection) -> None:
     if not row:
         conn.execute(
             "CREATE VIRTUAL TABLE IF NOT EXISTS repos_fts USING fts5("
-            "full_name, description, readme_excerpt, topics_text"
+            "full_name, description, readme_excerpt, topics_text, use_cases_text"
             ")"
         )
         conn.execute(
-            "INSERT INTO repos_fts(rowid, full_name, description, readme_excerpt, topics_text) "
+            "INSERT INTO repos_fts(rowid, full_name, description, readme_excerpt, topics_text, use_cases_text) "
             "SELECT id, full_name, COALESCE(description, ''), COALESCE(readme_excerpt, ''), "
-            "REPLACE(REPLACE(COALESCE(topics, '[]'), '[', ''), ']', '') FROM repos"
+            "REPLACE(REPLACE(COALESCE(topics, '[]'), '[', ''), ']', ''), "
+            "REPLACE(REPLACE(COALESCE(use_cases, '[]'), '[', ''), ']', '') FROM repos"
         )
         conn.commit()
 
@@ -177,10 +184,9 @@ def _ensure_fts_exists(conn: sqlite3.Connection) -> None:
 def _sanitize_fts_query(query: str) -> str:
     """Sanitize user input for FTS5 MATCH safety.
 
-    Handles: unbalanced quotes, unicode normalization, FTS5 operator injection
-    (AND/OR/NOT/NEAR), special characters, empty/whitespace input, and
-    excessively long queries. Each token is double-quoted to prevent any
-    FTS5 syntax interpretation.
+    Preserves hyphens within words (e.g. machine-learning) and handles
+    special language names (C++, C#) by mapping them to searchable tokens.
+    Each token is double-quoted to prevent FTS5 syntax interpretation.
     """
     cleaned = query.strip()
     if not cleaned:
@@ -189,27 +195,36 @@ def _sanitize_fts_query(query: str) -> str:
     # Truncate overly long queries
     cleaned = cleaned[:_MAX_QUERY_LENGTH]
 
-    # Normalize unicode (e.g. decomposed accents → composed form)
+    # Normalize unicode
     cleaned = unicodedata.normalize("NFKC", cleaned)
 
-    # Strip null bytes and other control characters
+    # Strip null bytes and control characters
     cleaned = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', "", cleaned)
 
-    # Strip all double quotes to prevent injection into quoted phrases
+    # Handle special language names before stripping symbols
+    cleaned = re.sub(r'\bC\+\+', 'cpp', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'\bC#', 'csharp', cleaned, flags=re.IGNORECASE)
+
+    # Strip double quotes to prevent injection
     cleaned = cleaned.replace('"', "")
 
-    # Remove FTS5-special characters: punctuation that has meaning in FTS5 syntax
-    cleaned = re.sub(r'[(){}[\]^~*:+\-<>]', " ", cleaned)
+    # Remove FTS5-special characters but preserve hyphens within words
+    # First replace standalone hyphens (with spaces around them)
+    cleaned = re.sub(r'\s-\s', ' ', cleaned)
+    # Remove other FTS5 syntax chars (but not hyphens)
+    cleaned = re.sub(r'[(){}[\]^~*:+<>]', " ", cleaned)
 
     safe_tokens = []
     for token in cleaned.split():
-        # Skip FTS5 operator keywords (AND, OR, NOT, NEAR)
         if token.upper() in _FTS5_OPERATORS:
             continue
-        # Skip tokens that are only whitespace/empty after stripping
+        if not token or token == '-':
+            continue
+        # Strip leading/trailing hyphens
+        token = token.strip('-')
         if not token:
             continue
-        # Quote each token to prevent FTS5 interpretation
         safe_tokens.append(f'"{token}"')
 
-    return " OR ".join(safe_tokens) if safe_tokens else '""'
+    # Use AND instead of OR for multi-word queries — all terms must match
+    return " AND ".join(safe_tokens) if safe_tokens else '""'

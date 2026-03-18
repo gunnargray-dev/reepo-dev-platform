@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, TrendingUp, ArrowRight } from 'lucide-react';
+import { Search, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CategoryCard } from '@/components/category-card';
 import { RepoCard } from '@/components/repo-card';
@@ -61,9 +61,17 @@ export default function Home() {
   }, [categories]);
 
   return (
-    <div>
+    <div className="relative">
+      {/* Glow background — spans full page */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[800px] rounded-full bg-[radial-gradient(ellipse_at_center,var(--glow-center)_0%,var(--glow-mid)_40%,transparent_70%)] opacity-60 blur-[20px]" />
+          <div className="absolute left-1/4 top-1/3 h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,var(--glow-accent)_0%,transparent_70%)] opacity-40 blur-[40px] animate-[glow-drift_8s_ease-in-out_infinite]" />
+          <div className="absolute right-1/4 top-2/3 h-[250px] w-[250px] rounded-full bg-[radial-gradient(circle,var(--glow-accent2)_0%,transparent_70%)] opacity-30 blur-[40px] animate-[glow-drift_10s_ease-in-out_infinite_reverse]" />
+          <div className="absolute inset-0" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' opacity=\'0.04\'/%3E%3C/svg%3E")', backgroundRepeat: 'repeat', backgroundSize: '256px 256px' }} />
+      </div>
+
       {/* Hero */}
-      <section className="px-4 py-20 sm:py-28">
+      <section className="relative px-4 py-20 sm:py-28">
         <div className="mx-auto max-w-2xl text-center animate-slide-up">
           <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-5xl leading-[1.1]">
 Discover the best AI repos
@@ -100,17 +108,6 @@ Discover the best AI repos
             ))}
           </div>
 
-          {stats && (
-            <div className="mt-6 flex items-center justify-center gap-3 text-[13px] text-muted-foreground">
-              <span className="font-mono tabular-nums">{formatNumber(stats.total_repos)}</span>
-              <span>repos</span>
-              <span className="text-border">/</span>
-              <span className="font-mono tabular-nums">{Object.keys(stats.by_category).length}</span>
-              <span>categories</span>
-              <span className="text-border">/</span>
-              <span>avg score <span className="font-mono tabular-nums">{stats.score_stats.avg_score}</span></span>
-            </div>
-          )}
           <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-border to-transparent" />
         </div>
       </section>
@@ -118,18 +115,10 @@ Discover the best AI repos
       {/* Trending */}
       {trending.length > 0 && (
         <section className="mx-auto max-w-5xl px-4 pb-14 sm:px-6 animate-fade-in" style={{ animationDelay: '0.05s' }}>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">
-              <TrendingUp className="h-3.5 w-3.5" />
-              {trending[0]?.star_delta ? 'Trending this week' : 'Top scored'}
-            </h2>
-            <Link
-              to="/trending"
-              className="flex items-center gap-1 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              View all <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
+          <h2 className="mb-4 flex items-center gap-2 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">
+            <TrendingUp className="h-3.5 w-3.5" />
+            {trending[0]?.star_delta ? 'Trending this week' : 'Top scored'}
+          </h2>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {trending.map((repo) => (
               <RepoCard key={repo.id} repo={repo} showDelta={repo.star_delta} />

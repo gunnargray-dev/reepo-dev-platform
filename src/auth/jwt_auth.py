@@ -5,6 +5,10 @@ import time
 import jwt
 
 SECRET_KEY = os.environ.get("REEPO_JWT_SECRET", "reepo-dev-secret-change-in-production")
+SUPABASE_JWT_SECRET = os.environ.get(
+    "SUPABASE_JWT_SECRET",
+    "super-secret-jwt-token-with-at-least-32-characters-long",
+)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE = 3600       # 1 hour
 REFRESH_TOKEN_EXPIRE = 86400 * 30  # 30 days
@@ -37,12 +41,11 @@ def create_refresh_token(user_id: int) -> str:
 
 
 def decode_token(token: str) -> dict:
-    """Decode and verify a JWT token. Raises jwt.ExpiredSignatureError or jwt.InvalidTokenError."""
-    data = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    # Convert sub back to int for convenience
-    if "sub" in data:
-        try:
-            data["sub"] = int(data["sub"])
-        except (ValueError, TypeError):
-            pass
+    """Decode and verify a Supabase JWT token. Raises jwt.ExpiredSignatureError or jwt.InvalidTokenError."""
+    data = jwt.decode(
+        token,
+        SUPABASE_JWT_SECRET,
+        algorithms=[ALGORITHM],
+        options={"verify_aud": False},
+    )
     return data

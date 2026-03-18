@@ -53,6 +53,17 @@ def submit_repo(
     return {"ok": True, "submission_id": submission_id}
 
 
+def get_user_submissions(user_id, path: str = DEFAULT_DB_PATH) -> list[dict]:
+    """Return all submissions by a given user."""
+    conn = _connect(path)
+    rows = conn.execute(
+        "SELECT * FROM repo_submissions WHERE user_id = ? ORDER BY created_at DESC",
+        (user_id,),
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
 def list_pending_submissions(path: str = DEFAULT_DB_PATH) -> list[dict]:
     """List all pending repo submissions."""
     conn = _connect(path)

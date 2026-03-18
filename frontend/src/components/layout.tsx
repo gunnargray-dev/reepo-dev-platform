@@ -1,19 +1,31 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogOut, Bookmark, FolderPlus, Rocket, ChevronDown, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { SearchCommand } from '@/components/search-command';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useAuth } from '@/lib/auth';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 
 const NAV_LINKS = [
   { to: '/search', label: 'Search' },
+  { to: '/projects', label: 'Projects' },
   { to: '/about', label: 'About' },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, loading, signIn, signOut } = useAuth();
+
+  const avatarUrl = user?.user_metadata?.avatar_url;
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -21,9 +33,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="flex h-14 items-center justify-between">
             <div className="flex items-center gap-8">
-              <Link to="/" className="flex items-center gap-2 font-semibold text-foreground hover:opacity-70 transition-opacity">
-                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-foreground text-background font-mono text-xs font-bold">R</span>
-                <span className="text-sm tracking-tight">Reepo</span>
+              <Link to="/" className="flex items-center hover:opacity-70 transition-opacity">
+                <img src="/reepo-logo.svg" alt="Reepo" className="h-3.5 invert dark:invert-0" />
               </Link>
               <nav className="hidden md:flex items-center gap-1">
                 {NAV_LINKS.map(({ to, label }) => (
@@ -42,6 +53,52 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <SearchCommand />
               </div>
               <ThemeToggle />
+              {!loading && !user && (
+                <Button variant="ghost" size="sm" onClick={signIn} className="text-[13px]">
+                  Sign in with GitHub
+                </Button>
+              )}
+              {user && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-1 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="" className="h-7 w-7 rounded-full" />
+                      ) : (
+                        <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center">
+                          <UserIcon className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link to="/saved" className="flex items-center gap-2">
+                        <Bookmark className="h-4 w-4" />
+                        Saved Repos
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/projects" className="flex items-center gap-2">
+                        <Rocket className="h-4 w-4" />
+                        My Projects
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/submit" className="flex items-center gap-2">
+                        <FolderPlus className="h-4 w-4" />
+                        Submit a Repo
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={signOut} className="flex items-center gap-2">
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -67,6 +124,51 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   {label}
                 </Link>
               ))}
+              <Separator className="my-2" />
+              {!loading && !user && (
+                <button
+                  onClick={() => { signIn(); setMobileOpen(false); }}
+                  className="block w-full text-left rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                >
+                  Sign in with GitHub
+                </button>
+              )}
+              {user && (
+                <>
+                  <Link
+                    to="/saved"
+                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Bookmark className="h-4 w-4" />
+                    Saved Repos
+                  </Link>
+                  <Link
+                    to="/projects"
+                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Rocket className="h-4 w-4" />
+                    My Projects
+                  </Link>
+                  <Link
+                    to="/submit"
+                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <FolderPlus className="h-4 w-4" />
+                    Submit a Repo
+                  </Link>
+                  <Separator className="my-2" />
+                  <button
+                    onClick={() => { signOut(); setMobileOpen(false); }}
+                    className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -78,14 +180,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span className="flex h-5 w-5 items-center justify-center rounded bg-foreground text-background font-mono text-[10px] font-bold">R</span>
-              <span>Reepo.dev</span>
+              <img src="/reepo-logo.svg" alt="Reepo" className="h-2.5 invert dark:invert-0" />
               <Separator orientation="vertical" className="h-3" />
               <span>Open source discovery for AI</span>
             </div>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <Link to="/about" className="hover:text-foreground transition-colors">How Scoring Works</Link>
-              <a href="/api/open-data/latest.csv" className="hover:text-foreground transition-colors">Open Data</a>
             </div>
           </div>
         </div>

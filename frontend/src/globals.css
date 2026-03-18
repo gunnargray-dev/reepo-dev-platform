@@ -59,6 +59,10 @@
   --score-high: #16a34a;
   --score-mid: #ca8a04;
   --score-low: #dc2626;
+  --glow-center: rgba(99, 102, 241, 0.08);
+  --glow-mid: rgba(139, 92, 246, 0.04);
+  --glow-accent: rgba(59, 130, 246, 0.06);
+  --glow-accent2: rgba(168, 85, 247, 0.05);
 }
 
 .dark {
@@ -76,6 +80,10 @@
   --score-high: #4ade80;
   --score-mid: #fbbf24;
   --score-low: #f87171;
+  --glow-center: rgba(99, 102, 241, 0.12);
+  --glow-mid: rgba(139, 92, 246, 0.06);
+  --glow-accent: rgba(59, 130, 246, 0.10);
+  --glow-accent2: rgba(168, 85, 247, 0.08);
 }
 
 body {
@@ -101,4 +109,10 @@ body {
 @keyframes stagger-in {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 15px) scale(0.95); }
 }

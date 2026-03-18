@@ -1,6 +1,9 @@
 """Reepo FastAPI server — app factory with CORS and middleware."""
 import os
 
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env.local'))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -44,7 +47,7 @@ def create_app(db_path: str | None = None) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    application.add_middleware(RateLimiter, max_requests=100, window_seconds=60)
+    application.add_middleware(RateLimiter, max_requests=500, window_seconds=60)
 
     from src.api.search_routes import router as search_router
     from src.api.repos import router as repos_router

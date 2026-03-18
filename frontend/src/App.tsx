@@ -11,6 +11,10 @@ import Stats from '@/pages/Stats';
 import Alternatives from '@/pages/Alternatives';
 import AdminAnalytics from '@/pages/AdminAnalytics';
 import About from '@/pages/About';
+import SavedRepos from '@/pages/SavedRepos';
+import SubmitRepo from '@/pages/SubmitRepo';
+import Projects from '@/pages/Projects';
+import SubmitProject from '@/pages/SubmitProject';
 
 export default function App() {
   return (
@@ -27,6 +31,10 @@ export default function App() {
         <Route path="/alternatives/:owner/:name" element={<Alternatives />} />
         <Route path="/about" element={<About />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
+        <Route path="/saved" element={<SavedRepos />} />
+        <Route path="/submit" element={<SubmitRepo />} />
+        <Route path="/projects/new" element={<SubmitProject />} />
+        <Route path="/projects" element={<Projects />} />
       </Routes>
     </Layout>
   );

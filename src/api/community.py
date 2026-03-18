@@ -1,12 +1,11 @@
 """Reepo API — community endpoints: Built With, comments, submissions, digest."""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 router = APIRouter()
 
 
 class SubmitProjectRequest(BaseModel):
-    user_id: int
     title: str
     description: str
     url: str
@@ -15,24 +14,24 @@ class SubmitProjectRequest(BaseModel):
 
 
 class AddCommentRequest(BaseModel):
-    user_id: int
     body: str
     parent_id: int | None = None
 
 
 class SubmitRepoRequest(BaseModel):
-    user_id: int
     github_url: str
 
 
 # --- Built With ---
 
 @router.post("/api/built-with")
-def api_submit_project(req: SubmitProjectRequest):
+def api_submit_project(req: SubmitProjectRequest, request: Request):
     from src.server import get_db_path
+    from src.auth.middleware import require_auth
     from src.community.built_with import submit_project
+    payload = require_auth(request)
     project_id = submit_project(
-        user_id=req.user_id,
+        user_id=payload["sub"],
         title=req.title,
         description=req.description,
         url=req.url,
@@ -61,10 +60,12 @@ def api_get_project(project_id: int):
 
 
 @router.post("/api/built-with/{project_id}/upvote")
-def api_toggle_upvote(project_id: int, user_id: int):
+def api_toggle_upvote(project_id: int, request: Request):
     from src.server import get_db_path
+    from src.auth.middleware import require_auth
     from src.community.upvotes import toggle_upvote
-    upvoted = toggle_upvote(user_id, project_id, get_db_path())
+    payload = require_auth(request)
+    upvoted = toggle_upvote(payload["sub"], project_id, get_db_path())
     return {"upvoted": upvoted}
 
 
@@ -95,15 +96,17 @@ def api_get_comments(owner: str, name: str, limit: int = 50):
 
 
 @router.post("/api/repos/{owner}/{name}/comments")
-def api_add_comment(owner: str, name: str, req: AddCommentRequest):
+def api_add_comment(owner: str, name: str, req: AddCommentRequest, request: Request):
     from src.server import get_db_path
     from src.db import get_repo
+    from src.auth.middleware import require_auth
     from src.community.comments import add_comment
+    payload = require_auth(request)
     repo = get_repo(owner, name, get_db_path())
     if not repo:
         raise HTTPException(404, "Repo not found")
     comment_id = add_comment(
-        user_id=req.user_id,
+        user_id=payload["sub"],
         repo_id=repo["id"],
         body=req.body,
         parent_id=req.parent_id,
@@ -115,13 +118,24 @@ def api_add_comment(owner: str, name: str, req: AddCommentRequest):
 # --- Submissions ---
 
 @router.post("/api/submissions")
-def api_submit_repo(req: SubmitRepoRequest):
+def api_submit_repo(req: SubmitRepoRequest, request: Request):
     from src.server import get_db_path
+    from src.auth.middleware import require_auth
     from src.community.submissions import submit_repo
-    result = submit_repo(req.user_id, req.github_url, get_db_path())
+    payload = require_auth(request)
+    result = submit_repo(payload["sub"], req.github_url, get_db_path())
     if not result.get("ok"):
         raise HTTPException(400, result.get("error", "Submission failed"))
     return {"id": result["submission_id"], "status": "pending"}
+
+
+@router.get("/api/submissions/mine")
+def api_my_submissions(request: Request):
+    from src.server import get_db_path
+    from src.auth.middleware import require_auth
+    from src.community.submissions import get_user_submissions
+    payload = require_auth(request)
+    return get_user_submissions(payload["sub"], get_db_path())
 
 
 # --- Digest ---

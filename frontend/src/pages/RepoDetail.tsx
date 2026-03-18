@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, GitFork, ExternalLink, Copy, Check, AlertCircle } from 'lucide-react';
+import { Star, GitFork, ExternalLink, Copy, Check, AlertCircle, Clock, Heart } from 'lucide-react';
 import type { Repo } from '@/lib/api';
-import { getRepo, getSimilarRepos, getRepoReadme, getScoreHistory } from '@/lib/api';
-import type { ScoreHistoryEntry } from '@/lib/api';
+import { getRepo, getSimilarRepos, getRepoReadme, getScoreHistory, addBookmark, removeBookmark, checkBookmarks, getRepoProjects } from '@/lib/api';
+import type { ScoreHistoryEntry, Project } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { formatNumber, timeAgo, languageColor, scoreColorVar } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { RepoCard } from '@/components/repo-card';
 import { DimensionCell } from '@/components/dimension-bar';
 import { ScoreSparkline } from '@/components/score-sparkline';
+import { AnimatedNumber } from '@/components/animated-number';
 import { getUseCases } from '@/lib/use-cases';
 
 const DIMENSIONS: Record<string, string> = {
@@ -22,28 +24,69 @@ const DIMENSIONS: Record<string, string> = {
   license_score: 'License',
 };
 
+function freshness(pushedAt: string | null): { label: string; color: string; dot: string } {
+  if (!pushedAt) return { label: 'Unknown', color: 'var(--fg-muted)', dot: 'bg-muted-foreground/40' };
+  const days = (Date.now() - new Date(pushedAt).getTime()) / 86400000;
+  if (days <= 30) return { label: 'Active', color: 'var(--score-high)', dot: 'bg-[var(--score-high)]' };
+  if (days <= 90) return { label: 'Recent', color: 'var(--score-high)', dot: 'bg-[var(--score-high)]' };
+  if (days <= 180) return { label: 'Moderate', color: 'var(--score-mid)', dot: 'bg-[var(--score-mid)]' };
+  if (days <= 365) return { label: 'Aging', color: 'var(--score-mid)', dot: 'bg-[var(--score-mid)]' };
+  return { label: 'Stale', color: 'var(--score-low)', dot: 'bg-[var(--score-low)]' };
+}
+
 export default function RepoDetail() {
   const { owner, name } = useParams<{ owner: string; name: string }>();
+  const { user, signIn } = useAuth();
   const [repo, setRepo] = useState<Repo | null>(null);
   const [similar, setSimilar] = useState<Repo[]>([]);
   const [readme, setReadme] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [history, setHistory] = useState<ScoreHistoryEntry[]>([]);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     if (!owner || !name) return;
     setLoading(true);
     setReadme(null);
+    setBookmarked(false);
+    setProjects([]);
     document.title = `${owner}/${name} -- Reepo.dev`;
     Promise.allSettled([getRepo(owner, name), getSimilarRepos(owner, name)]).then(([rr, sr]) => {
-      if (rr.status === 'fulfilled') setRepo(rr.value);
+      if (rr.status === 'fulfilled') {
+        setRepo(rr.value);
+        if (user && rr.value) {
+          checkBookmarks([rr.value.id]).then((ids) => setBookmarked(ids.includes(rr.value.id))).catch(() => {});
+        }
+      }
       if (sr.status === 'fulfilled') setSimilar(sr.value);
       setLoading(false);
     });
     getRepoReadme(owner, name).then(setReadme).catch(() => {});
     getScoreHistory(owner, name).then(setHistory).catch(() => {});
-  }, [owner, name]);
+    getRepoProjects(owner, name).then(setProjects).catch(() => {});
+  }, [owner, name, user]);
+
+  const handleBookmark = async () => {
+    if (!user) { signIn(); return }
+    if (!repo) return
+    setBookmarkLoading(true)
+    const wasBookmarked = bookmarked
+    setBookmarked(!wasBookmarked)
+    try {
+      if (wasBookmarked) {
+        await removeBookmark(repo.id)
+      } else {
+        await addBookmark(repo.id)
+      }
+    } catch {
+      setBookmarked(wasBookmarked)
+    } finally {
+      setBookmarkLoading(false)
+    }
+  }
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -110,6 +153,15 @@ export default function RepoDetail() {
             <Button variant="ghost" size="sm" onClick={handleShare}>
               {copied ? <><Check className="mr-1.5 h-3 w-3" />Copied</> : <><Copy className="mr-1.5 h-3 w-3" />Share</>}
             </Button>
+            <Button
+              variant={bookmarked ? "default" : "ghost"}
+              size="sm"
+              onClick={handleBookmark}
+              disabled={bookmarkLoading}
+            >
+              <Heart className={`mr-1.5 h-3 w-3 ${bookmarked ? 'fill-current' : ''}`} />
+              {bookmarked ? 'Saved' : 'Save'}
+            </Button>
           </div>
 
           {/* Meta */}
@@ -130,14 +182,23 @@ export default function RepoDetail() {
                 {repo.language}
               </span>
             )}
-            {repo.created_at && <span>{timeAgo(repo.created_at)}</span>}
+            {repo.pushed_at && (() => {
+              const f = freshness(repo.pushed_at);
+              return (
+                <span className="flex items-center gap-1.5">
+                  <span className={`h-2 w-2 rounded-full ${f.dot} animate-pulse`} />
+                  <span style={{ color: f.color }}>{f.label}</span>
+                  <span className="text-muted-foreground">· pushed {timeAgo(repo.pushed_at)}</span>
+                </span>
+              );
+            })()}
           </div>
 
           {/* Summary */}
-          {readme && (
+          {(readme || repo.description) && (
             <div className="mt-6">
               <h2 className="mb-2 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">About</h2>
-              <p className="text-[14px] leading-relaxed text-foreground/80">{readme}</p>
+              <p className="text-[14px] leading-relaxed text-foreground/80">{readme || repo.description}</p>
             </div>
           )}
 
@@ -145,7 +206,7 @@ export default function RepoDetail() {
           {useCases.length > 0 && (
             <div className="mt-8 pt-6 border-t border-border/50">
               <h2 className="mb-3 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Use cases</h2>
-              <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+              <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {useCases.map((c) => (
                   <li key={c} className="flex items-start gap-2 text-[14px] text-foreground/80">
                     <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
@@ -179,13 +240,18 @@ export default function RepoDetail() {
                 className="text-4xl font-bold font-mono tabular-nums"
                 style={{ color: scoreColor }}
               >
-                {repo.reepo_score ?? '--'}
+                <AnimatedNumber value={repo.reepo_score} duration={900} />
               </div>
               <div className="text-[12px] text-muted-foreground leading-tight">
                 <div>Reepo</div>
                 <div>Score</div>
               </div>
             </div>
+            {repo.score_percentile != null && (
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Top {Math.max(1, 100 - repo.score_percentile)}% of all repos
+              </p>
+            )}
             {repo.score_breakdown && (
               <div className="mt-3 divide-y divide-border">
                 {Object.entries(repo.score_breakdown).map(([key, value]) => (
@@ -207,13 +273,18 @@ export default function RepoDetail() {
                 className="text-4xl font-bold font-mono tabular-nums"
                 style={{ color: scoreColor }}
               >
-                {repo.reepo_score ?? '--'}
+                <AnimatedNumber value={repo.reepo_score} duration={900} />
               </div>
               <div className="text-[12px] text-muted-foreground leading-tight">
                 <div>Reepo</div>
                 <div>Score</div>
               </div>
             </div>
+            {repo.score_percentile != null && (
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Top {Math.max(1, 100 - repo.score_percentile)}% of all repos
+              </p>
+            )}
             {repo.score_breakdown && (
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {Object.entries(repo.score_breakdown).map(([key, value]) => (
@@ -240,6 +311,24 @@ export default function RepoDetail() {
           </div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {similar.slice(0, 4).map((r) => <RepoCard key={r.id} repo={r} />)}
+          </div>
+        </div>
+      )}
+
+      {projects.length > 0 && (
+        <div className="mt-12 pt-8 border-t border-border/50">
+          <h2 className="mb-4 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Built with this</h2>
+          <div className="space-y-2">
+            {projects.map((p) => (
+              <a key={p.id} href={p.url} target="_blank" rel="noopener noreferrer"
+                 className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-3 hover:border-border/80 transition-all">
+                <div>
+                  <h3 className="text-[14px] font-medium text-foreground">{p.title}</h3>
+                  {p.description && <p className="mt-0.5 text-[13px] text-muted-foreground line-clamp-1">{p.description}</p>}
+                </div>
+                <span className="text-[12px] text-muted-foreground">{p.upvote_count} upvotes</span>
+              </a>
+            ))}
           </div>
         </div>
       )}
