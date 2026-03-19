@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, TrendingUp } from 'lucide-react';
+import { Search, Sparkles, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CategoryCard } from '@/components/category-card';
 import { RepoCard } from '@/components/repo-card';
+import { NetworkBg } from '@/components/network-bg';
 import type { CategoryInfo, StatsResponse, Repo } from '@/lib/api';
-import { getCategories, getStats, searchRepos, getTrending } from '@/lib/api';
+import { getCategories, getStats, searchRepos, getTrending, getFeatured } from '@/lib/api';
 import { formatNumber } from '@/lib/utils';
+import { useAuth } from '@/lib/auth';
 
 interface TrendingRepo extends Repo {
   star_delta?: number;
@@ -14,24 +16,26 @@ interface TrendingRepo extends Repo {
 
 const QUICK_SEARCHES = [
   'RAG frameworks',
-  'image generation',
   'coding agents',
-  'voice cloning',
-  'fine-tuning',
+  'UI component libraries',
+  'design systems',
+  'image generation',
+  'icon libraries',
   'vector databases',
-  'LLM inference',
-  'computer vision',
+  'CSS frameworks',
 ];
 
 export default function Home() {
+  const { user, loading: authLoading, signIn } = useAuth();
   const [categories, setCategories] = useState<CategoryInfo[]>([]);
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [categoryRepos, setCategoryRepos] = useState<Record<string, { full_name: string; owner: string }[]>>({});
   const [trending, setTrending] = useState<TrendingRepo[]>([]);
+  const [featured, setFeatured] = useState<Repo[]>([]);
 
   useEffect(() => {
-    document.title = 'Reepo.dev -- Discover Open Source AI';
-    Promise.allSettled([getCategories(), getStats(), getTrending('week', 8)]).then(([catR, statsR, trendR]) => {
+    document.title = 'Reepo.dev -- Discover Open Source';
+    Promise.allSettled([getCategories(), getStats(), getTrending('week', 8), getFeatured()]).then(([catR, statsR, trendR, featR]) => {
       if (catR.status === 'fulfilled') setCategories(catR.value);
       if (statsR.status === 'fulfilled') setStats(statsR.value);
       if (trendR.status === 'fulfilled' && trendR.value.length > 0) {
@@ -42,6 +46,7 @@ export default function Home() {
           setTrending(res.repos);
         }).catch(() => {});
       }
+      if (featR.status === 'fulfilled') setFeatured(featR.value);
     });
   }, []);
 
@@ -62,22 +67,21 @@ export default function Home() {
 
   return (
     <div className="relative">
-      {/* Glow background — spans full page */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+      {/* Interactive network background */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[520px] overflow-hidden sm:h-[600px]" aria-hidden="true">
+          <NetworkBg />
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[800px] rounded-full bg-[radial-gradient(ellipse_at_center,var(--glow-center)_0%,var(--glow-mid)_40%,transparent_70%)] opacity-60 blur-[20px]" />
-          <div className="absolute left-1/4 top-1/3 h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,var(--glow-accent)_0%,transparent_70%)] opacity-40 blur-[40px] animate-[glow-drift_8s_ease-in-out_infinite]" />
-          <div className="absolute right-1/4 top-2/3 h-[250px] w-[250px] rounded-full bg-[radial-gradient(circle,var(--glow-accent2)_0%,transparent_70%)] opacity-30 blur-[40px] animate-[glow-drift_10s_ease-in-out_infinite_reverse]" />
-          <div className="absolute inset-0" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' opacity=\'0.04\'/%3E%3C/svg%3E")', backgroundRepeat: 'repeat', backgroundSize: '256px 256px' }} />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-background" />
       </div>
 
       {/* Hero */}
-      <section className="relative px-4 py-20 sm:py-28">
+      <section className="relative z-10 px-4 py-20 sm:py-28">
         <div className="mx-auto max-w-2xl text-center animate-slide-up">
           <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-5xl leading-[1.1]">
-Discover the best AI repos
+Discover, save, and share the best open source repos
           </h1>
           <p className="mt-3 text-[15px] text-muted-foreground">
-            Reepo scores {stats ? `${formatNumber(stats.total_repos)}+` : ''} open source AI projects on maintenance, docs, community, and more.
+            Reepo scores open source projects on maintenance, docs, community, and more.
           </p>
           <div className="mt-8 flex justify-center">
             <Button
@@ -114,7 +118,7 @@ Discover the best AI repos
 
       {/* Trending */}
       {trending.length > 0 && (
-        <section className="mx-auto max-w-5xl px-4 pb-14 sm:px-6 animate-fade-in" style={{ animationDelay: '0.05s' }}>
+        <section className="relative z-10 mx-auto max-w-5xl px-4 pb-14 sm:px-6 animate-fade-in" style={{ animationDelay: '0.05s' }}>
           <h2 className="mb-4 flex items-center gap-2 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">
             <TrendingUp className="h-3.5 w-3.5" />
             {trending[0]?.star_delta ? 'Trending this week' : 'Top scored'}
@@ -127,15 +131,64 @@ Discover the best AI repos
         </section>
       )}
 
+      {/* Featured */}
+      {featured.length > 0 && (
+        <section className="relative z-10 mx-auto max-w-5xl px-4 pb-14 sm:px-6 animate-fade-in" style={{ animationDelay: '0.08s' }}>
+          <h2 className="mb-4 flex items-center gap-2 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5" />
+            Featured
+          </h2>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {featured.map((repo) => (
+              <RepoCard key={repo.id} repo={repo} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Categories */}
       {categories.length > 0 && (
-        <section className="mx-auto max-w-5xl px-4 pb-14 sm:px-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+        <section className="relative z-10 mx-auto max-w-5xl px-4 pb-14 sm:px-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <h2 className="mb-4 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Categories</h2>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
             {categories.map((cat) => <CategoryCard key={cat.slug} category={cat} topRepos={categoryRepos[cat.slug]} />)}
           </div>
         </section>
       )}
+
+      {/* CTAs */}
+      <section className="relative z-10 mx-auto max-w-5xl px-4 py-20 sm:px-6">
+        <div className="mx-auto h-px w-24 bg-gradient-to-r from-transparent via-border to-transparent mb-16" />
+        <div className={`grid gap-6 ${!authLoading && !user ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 max-w-md mx-auto'}`}>
+          {/* Score CTA */}
+          <div className="rounded-xl border border-border/60 p-8 text-center">
+            <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+              Get your Reepo Score
+            </h2>
+            <p className="mt-3 text-[14px] text-muted-foreground">
+              Paste any GitHub repo and instantly see how it scores on maintenance, docs, community, and more.
+            </p>
+            <Button asChild size="lg" variant="outline" className="mt-6">
+              <Link to="/score">Score a repo</Link>
+            </Button>
+          </div>
+
+          {/* Sign up CTA */}
+          {!authLoading && !user && (
+            <div className="rounded-xl border border-border/60 p-8 text-center">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                Save and share repos
+              </h2>
+              <p className="mt-3 text-[14px] text-muted-foreground">
+                Bookmark repos, build collections, and showcase projects you've built with the community.
+              </p>
+              <Button onClick={signIn} size="lg" className="mt-6">
+                Sign up with GitHub
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

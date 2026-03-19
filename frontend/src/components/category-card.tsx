@@ -12,12 +12,9 @@ export function CategoryCard({ category, topRepos }: CategoryCardProps) {
       to={`/category/${category.slug}`}
       className="group flex flex-col rounded-lg border border-border/60 bg-card px-3.5 py-3 transition-all duration-150 hover:border-border/80 hover:bg-accent/5 hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)]"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center">
         <span className="text-[13px] font-medium text-foreground group-hover:underline underline-offset-2 truncate">
           {category.name}
-        </span>
-        <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
-          {category.repo_count}
         </span>
       </div>
       {topRepos && topRepos.length > 0 && (

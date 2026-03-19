@@ -17,6 +17,7 @@ import {
 
 const NAV_LINKS = [
   { to: '/search', label: 'Search' },
+  { to: '/score', label: 'Score' },
   { to: '/projects', label: 'Projects' },
   { to: '/about', label: 'About' },
 ];
@@ -29,7 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="flex h-14 items-center justify-between">
             <div className="flex items-center gap-8">
@@ -182,7 +183,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <img src="/reepo-logo.svg" alt="Reepo" className="h-2.5 invert dark:invert-0" />
               <Separator orientation="vertical" className="h-3" />
-              <span>Open source discovery for AI</span>
+              <span>Discover the best open source</span>
             </div>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <Link to="/about" className="hover:text-foreground transition-colors">How Scoring Works</Link>

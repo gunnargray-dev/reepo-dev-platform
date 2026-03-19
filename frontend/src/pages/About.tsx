@@ -228,8 +228,82 @@ export default function About() {
         </div>
       </div>
 
-      {/* Philosophy */}
+      {/* New repo adjustment */}
       <div className="mt-16 animate-slide-up" style={{ animationDelay: '240ms' }}>
+        <div className="flex items-center gap-3 mb-6">
+          <h2 className="text-[13px] font-medium uppercase tracking-wider text-muted-foreground">New Repo Adjustment</h2>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        <div className="space-y-4 text-[14px] leading-relaxed text-muted-foreground">
+          <p>
+            Brand new repos shouldn't be penalized for not having stars yet. For repos less than <strong className="text-foreground">90 days old</strong>, we adjust the dimension weights so that community and popularity carry less influence, while maintenance, documentation, and freshness carry more.
+          </p>
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="rounded-lg border border-border/60 p-4">
+            <div className="text-[12px] font-medium uppercase tracking-wider text-muted-foreground mb-3">New repos (&lt; 90 days)</div>
+            <div className="space-y-1.5">
+              {[
+                ['Maintenance', '30%'],
+                ['Documentation', '25%'],
+                ['Freshness', '15%'],
+                ['Community', '10%'],
+                ['Popularity', '10%'],
+                ['License', '10%'],
+              ].map(([label, value]) => (
+                <div key={label} className="flex items-baseline justify-between text-[12px]">
+                  <span className="text-muted-foreground">{label}</span>
+                  <span className="font-mono text-foreground/70">{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border/60 p-4">
+            <div className="text-[12px] font-medium uppercase tracking-wider text-muted-foreground mb-3">Mature repos (90+ days)</div>
+            <div className="space-y-1.5">
+              {[
+                ['Maintenance', '25%'],
+                ['Community', '25%'],
+                ['Documentation', '15%'],
+                ['Popularity', '15%'],
+                ['Freshness', '10%'],
+                ['License', '10%'],
+              ].map(([label, value]) => (
+                <div key={label} className="flex items-baseline justify-between text-[12px]">
+                  <span className="text-muted-foreground">{label}</span>
+                  <span className="font-mono text-foreground/70">{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <p className="mt-4 text-[13px] text-muted-foreground">
+          The transition is gradual — weights blend linearly over the first 90 days, so there's no sudden jump.
+        </p>
+      </div>
+
+      {/* Rescoring cadence */}
+      <div className="mt-16 animate-slide-up" style={{ animationDelay: '300ms' }}>
+        <div className="flex items-center gap-3 mb-6">
+          <h2 className="text-[13px] font-medium uppercase tracking-wider text-muted-foreground">How Often Scores Update</h2>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        <div className="space-y-4 text-[14px] leading-relaxed text-muted-foreground">
+          <p>
+            Scores are <strong className="text-foreground">recalculated weekly</strong>. Every 7 days we re-fetch repo metadata from GitHub and re-run the scoring algorithm. This means a repo that goes dormant will see its maintenance and freshness scores drop over time, while a repo that picks up momentum will climb.
+          </p>
+          <p>
+            Star velocity — how fast a repo is gaining stars — is tracked daily for trending repos. New repos are discovered and scored within 24 hours of being indexed.
+          </p>
+        </div>
+      </div>
+
+      {/* Philosophy */}
+      <div className="mt-16 animate-slide-up" style={{ animationDelay: '360ms' }}>
         <div className="flex items-center gap-3 mb-6">
           <h2 className="text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Philosophy</h2>
           <div className="flex-1 h-px bg-border" />
@@ -242,21 +316,22 @@ export default function About() {
           <p>
             We deliberately weight <strong className="text-foreground">documentation</strong> at 15% — enough to matter, but not enough to penalize fast-moving projects that prioritize code over prose. <strong className="text-foreground">License</strong> and <strong className="text-foreground">freshness</strong> are lower-weight signals that still affect whether you can actually use and depend on a project.
           </p>
-          <p>
-            Scores are recalculated periodically as repos evolve. A project that goes dormant will see its score drop over time.
-          </p>
         </div>
       </div>
 
       {/* CTA */}
-      <div className="mt-16 text-center animate-slide-up" style={{ animationDelay: '300ms' }}>
+      <div className="mt-16 text-center animate-slide-up" style={{ animationDelay: '420ms' }}>
         <div className="mx-auto h-px w-24 bg-gradient-to-r from-transparent via-border to-transparent mb-8" />
         <p className="text-[14px] text-muted-foreground">
           See it in action —{' '}
+          <Link to="/score" className="text-foreground underline underline-offset-2 hover:opacity-70 transition-opacity">
+            score a repo
+          </Link>
+          ,{' '}
           <Link to="/search" className="text-foreground underline underline-offset-2 hover:opacity-70 transition-opacity">
             search repos
           </Link>
-          {' '}or{' '}
+          , or{' '}
           <Link to="/trending" className="text-foreground underline underline-offset-2 hover:opacity-70 transition-opacity">
             browse trending
           </Link>.

@@ -1,4 +1,4 @@
-"""Reepo taxonomy — category classification for AI repositories."""
+"""Reepo taxonomy — category classification for repositories."""
 
 CATEGORIES = {
     "frameworks": {
@@ -160,6 +160,115 @@ CATEGORIES = {
         ],
         "name_patterns": [
             "lib", "embed", "vector", "token",
+        ],
+    },
+    "ui-components": {
+        "name": "UI Components",
+        "keywords": [
+            "component library", "ui components", "react components",
+            "vue components", "svelte components", "ui kit",
+            "headless ui", "accessible components", "primitives",
+            "form components", "table component", "data table",
+        ],
+        "topics": [
+            "react-components", "vue-components", "ui-components",
+            "component-library", "ui-kit", "headless-ui", "radix",
+            "shadcn", "ui-library", "web-components",
+        ],
+        "name_patterns": [
+            "ui", "components", "primitives",
+        ],
+    },
+    "design-systems": {
+        "name": "Design Systems",
+        "keywords": [
+            "design system", "design tokens", "style guide",
+            "component system", "design language", "theming",
+            "design guidelines", "pattern library",
+        ],
+        "topics": [
+            "design-system", "design-tokens", "style-guide",
+            "material-design", "fluent-design", "ant-design",
+        ],
+        "name_patterns": [
+            "design-system", "design-token",
+        ],
+    },
+    "css-styling": {
+        "name": "CSS & Styling",
+        "keywords": [
+            "css framework", "css-in-js", "utility css", "styling",
+            "tailwind", "postcss", "sass", "css modules",
+            "atomic css", "css library", "animations",
+        ],
+        "topics": [
+            "tailwindcss", "css-framework", "css-in-js", "postcss",
+            "sass", "css", "styling", "css-animations",
+            "unocss", "css-modules",
+        ],
+        "name_patterns": [
+            "css", "tailwind", "style", "theme",
+        ],
+    },
+    "icons-assets": {
+        "name": "Icons & Assets",
+        "keywords": [
+            "icon library", "icon set", "svg icons", "icon pack",
+            "illustrations", "emoji", "avatars", "assets",
+            "icon font", "symbol",
+        ],
+        "topics": [
+            "icons", "svg-icons", "icon-library", "icon-set",
+            "icon-font", "illustrations", "emoji", "svg",
+        ],
+        "name_patterns": [
+            "icon", "emoji", "avatar",
+        ],
+    },
+    "animation": {
+        "name": "Animation & Motion",
+        "keywords": [
+            "animation library", "motion", "transitions",
+            "spring animation", "css animation", "web animation",
+            "scroll animation", "gesture", "lottie",
+        ],
+        "topics": [
+            "animation", "motion", "framer-motion", "gsap",
+            "lottie", "web-animations", "transitions",
+            "spring-animation", "scroll-animation",
+        ],
+        "name_patterns": [
+            "motion", "animate", "lottie", "spring",
+        ],
+    },
+    "design-tools": {
+        "name": "Design Tools",
+        "keywords": [
+            "design tool", "whiteboard", "diagram", "drawing tool",
+            "prototyping", "wireframe", "figma", "collaborative design",
+            "canvas", "flowchart", "vector editor",
+        ],
+        "topics": [
+            "design-tool", "whiteboard", "diagramming", "figma",
+            "drawing", "prototyping", "wireframe", "canvas",
+            "flowchart", "excalidraw", "collaborative",
+        ],
+        "name_patterns": [
+            "draw", "diagram", "canvas", "figma", "sketch",
+        ],
+    },
+    "typography": {
+        "name": "Typography & Fonts",
+        "keywords": [
+            "font", "typeface", "typography", "web font",
+            "variable font", "font family", "open source font",
+        ],
+        "topics": [
+            "font", "typography", "typeface", "web-fonts",
+            "variable-fonts", "google-fonts", "fontsource",
+        ],
+        "name_patterns": [
+            "font", "type", "sans", "mono", "serif",
         ],
     },
 }

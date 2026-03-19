@@ -59,10 +59,10 @@
   --score-high: #16a34a;
   --score-mid: #ca8a04;
   --score-low: #dc2626;
-  --glow-center: rgba(99, 102, 241, 0.08);
-  --glow-mid: rgba(139, 92, 246, 0.04);
-  --glow-accent: rgba(59, 130, 246, 0.06);
-  --glow-accent2: rgba(168, 85, 247, 0.05);
+  --glow-center: rgba(0, 0, 0, 0.04);
+  --glow-mid: rgba(0, 0, 0, 0.02);
+  --glow-accent: rgba(0, 0, 0, 0.03);
+  --glow-accent2: rgba(0, 0, 0, 0.02);
 }
 
 .dark {
@@ -80,10 +80,10 @@
   --score-high: #4ade80;
   --score-mid: #fbbf24;
   --score-low: #f87171;
-  --glow-center: rgba(99, 102, 241, 0.12);
-  --glow-mid: rgba(139, 92, 246, 0.06);
-  --glow-accent: rgba(59, 130, 246, 0.10);
-  --glow-accent2: rgba(168, 85, 247, 0.08);
+  --glow-center: rgba(255, 255, 255, 0.06);
+  --glow-mid: rgba(255, 255, 255, 0.03);
+  --glow-accent: rgba(255, 255, 255, 0.04);
+  --glow-accent2: rgba(255, 255, 255, 0.03);
 }
 
 body {

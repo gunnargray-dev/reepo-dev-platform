@@ -41,7 +41,7 @@ export default function Projects() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Projects</h1>
-          <p className="mt-1 text-[14px] text-muted-foreground">Built with open-source AI repos</p>
+          <p className="mt-1 text-[14px] text-muted-foreground">Built with open-source repos</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex rounded-md border border-border text-[13px] overflow-hidden">

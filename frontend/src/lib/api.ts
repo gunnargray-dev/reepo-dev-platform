@@ -143,6 +143,11 @@ export async function getStats(): Promise<StatsResponse> {
   return fetchJson<StatsResponse>(buildUrl('/stats'));
 }
 
+export async function getFeatured(): Promise<Repo[]> {
+  const data = await fetchJson<{ repos: Repo[] }>(buildUrl('/featured'));
+  return data.repos;
+}
+
 export async function getRepoReadme(owner: string, name: string): Promise<string | null> {
   const data = await fetchJson<{ readme: string | null }>(buildUrl(`/repos/${owner}/${name}/readme`));
   return data.readme;
@@ -254,4 +259,34 @@ export async function upvoteProject(id: number): Promise<{ upvoted: boolean }> {
 
 export async function getRepoProjects(owner: string, name: string): Promise<Project[]> {
   return fetchJson<Project[]>(`${BASE}/repos/${owner}/${name}/built-with`)
+}
+
+export interface ScoreResult {
+  repo: {
+    owner: string;
+    name: string;
+    full_name: string;
+    description: string;
+    url: string;
+    stars: number;
+    forks: number;
+    language: string | null;
+    license: string | null;
+    category: string;
+  };
+  reepo_score: number;
+  score_breakdown: ScoreBreakdown;
+}
+
+export async function scoreRepo(url: string): Promise<ScoreResult> {
+  const res = await fetch(`${BASE}/score`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail || `API error: ${res.status}`);
+  }
+  return res.json();
 }

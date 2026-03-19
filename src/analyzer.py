@@ -19,6 +19,20 @@ WEIGHTS = {
     "license_score": 0.10,
 }
 
+# For repos < 90 days old, community+popularity weight is reduced and
+# redistributed to maintenance, docs, and freshness. This prevents new
+# repos from being penalized for not yet having stars/forks.
+_YOUNG_WEIGHTS = {
+    "maintenance_health": 0.30,
+    "documentation_quality": 0.25,
+    "community_activity": 0.10,
+    "popularity": 0.10,
+    "freshness": 0.15,
+    "license_score": 0.10,
+}
+
+AGE_RAMP_DAYS = 90  # linear blend from _YOUNG_WEIGHTS to WEIGHTS over this period
+
 PERMISSIVE_LICENSES = {"MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "ISC", "Unlicense", "0BSD"}
 COPYLEFT_LICENSES = {"GPL-2.0", "GPL-3.0", "AGPL-3.0", "LGPL-2.1", "LGPL-3.0", "MPL-2.0",
                      "GPL-2.0-only", "GPL-3.0-only", "AGPL-3.0-only"}
@@ -181,9 +195,15 @@ def analyze_repo(repo: dict) -> dict:
         "license_score": _score_license(repo),
     }
 
-    weighted_sum = sum(
-        breakdown[dim] * WEIGHTS[dim] for dim in WEIGHTS
-    )
+    # Age-adjusted weights: linearly blend from young to standard over 90 days
+    age_days = _days_since(repo.get("created_at"))
+    t = min(age_days / AGE_RAMP_DAYS, 1.0)  # 0 = brand new, 1 = mature
+    weights = {
+        dim: _YOUNG_WEIGHTS[dim] + t * (WEIGHTS[dim] - _YOUNG_WEIGHTS[dim])
+        for dim in WEIGHTS
+    }
+
+    weighted_sum = sum(breakdown[dim] * weights[dim] for dim in weights)
     reepo_score = round(weighted_sum)
 
     return {

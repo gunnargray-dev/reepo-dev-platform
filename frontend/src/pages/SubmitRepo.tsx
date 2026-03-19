@@ -61,7 +61,7 @@ export default function SubmitRepo() {
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       <h1 className="text-xl font-semibold">Submit a Repo</h1>
       <p className="mt-1 text-[14px] text-muted-foreground">
-        Know an open-source AI repo that should be indexed? Submit it here.
+        Know an open-source repo that should be indexed? Submit it here.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 flex gap-2">

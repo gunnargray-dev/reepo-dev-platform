@@ -87,7 +87,7 @@ export default function Stats() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <h1 className="text-xl font-semibold text-foreground">Index Stats</h1>
-      <p className="mt-1 text-[14px] text-muted-foreground">Open data about the Reepo AI repo index</p>
+      <p className="mt-1 text-[14px] text-muted-foreground">Open data about the Reepo repo index</p>
 
       <div className="mt-6 grid grid-cols-2 gap-2 md:grid-cols-4">
         <StatCard label="Total Repos" value={stats.total_repos.toLocaleString()} />

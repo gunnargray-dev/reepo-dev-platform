@@ -64,6 +64,14 @@ CREATE TABLE IF NOT EXISTS categories (
     repo_count INTEGER DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS featured_repos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    repo_id INTEGER NOT NULL UNIQUE,
+    display_order INTEGER DEFAULT 0,
+    added_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (repo_id) REFERENCES repos(id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_repos_stars ON repos(stars DESC);
 CREATE INDEX IF NOT EXISTS idx_repos_score ON repos(reepo_score DESC);
 CREATE INDEX IF NOT EXISTS idx_repos_category ON repos(category_primary);
@@ -352,6 +360,41 @@ def get_score_stats(path: str = DEFAULT_DB_PATH) -> dict:
             "poor_below_40": dist["poor"] or 0,
         },
     }
+
+
+def get_featured_repos(path: str = DEFAULT_DB_PATH) -> list[dict]:
+    conn = _connect(path)
+    rows = conn.execute(
+        "SELECT r.* FROM repos r "
+        "JOIN featured_repos f ON f.repo_id = r.id "
+        "ORDER BY f.display_order ASC, f.added_at DESC"
+    ).fetchall()
+    conn.close()
+    return [_row_to_dict(r) for r in rows]
+
+
+def add_featured_repo(repo_id: int, display_order: int = 0, path: str = DEFAULT_DB_PATH) -> bool:
+    conn = _connect(path)
+    try:
+        conn.execute(
+            "INSERT INTO featured_repos (repo_id, display_order) VALUES (?, ?)",
+            (repo_id, display_order),
+        )
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
+
+def remove_featured_repo(repo_id: int, path: str = DEFAULT_DB_PATH) -> bool:
+    conn = _connect(path)
+    cur = conn.execute("DELETE FROM featured_repos WHERE repo_id = ?", (repo_id,))
+    removed = cur.rowcount > 0
+    conn.commit()
+    conn.close()
+    return removed
 
 
 def _row_to_dict(row: sqlite3.Row) -> dict:

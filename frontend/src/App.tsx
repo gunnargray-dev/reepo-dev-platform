@@ -15,6 +15,7 @@ import SavedRepos from '@/pages/SavedRepos';
 import SubmitRepo from '@/pages/SubmitRepo';
 import Projects from '@/pages/Projects';
 import SubmitProject from '@/pages/SubmitProject';
+import Score from '@/pages/Score';
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/submit" element={<SubmitRepo />} />
         <Route path="/projects/new" element={<SubmitProject />} />
         <Route path="/projects" element={<Projects />} />
+        <Route path="/score" element={<Score />} />
       </Routes>
     </Layout>
   );

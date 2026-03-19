@@ -1,7 +1,13 @@
 """Reepo API — admin dashboard, moderation, and content management."""
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
 router = APIRouter()
+
+
+class FeaturedRepoRequest(BaseModel):
+    repo_id: int
+    display_order: int = 0
 
 
 @router.get("/api/admin/stats")
@@ -72,4 +78,32 @@ def api_remove_comment(comment_id: int):
     conn.close()
     if not removed:
         raise HTTPException(status_code=404, detail="Comment not found")
+    return {"status": "removed"}
+
+
+@router.get("/api/featured")
+def api_get_featured():
+    from src.server import get_db_path
+    from src.db import get_featured_repos
+
+    return {"repos": get_featured_repos(path=get_db_path())}
+
+
+@router.post("/api/admin/featured")
+def api_add_featured(req: FeaturedRepoRequest):
+    from src.server import get_db_path
+    from src.db import add_featured_repo
+
+    if not add_featured_repo(req.repo_id, req.display_order, path=get_db_path()):
+        raise HTTPException(status_code=409, detail="Repo already featured or not found")
+    return {"status": "added"}
+
+
+@router.delete("/api/admin/featured/{repo_id}")
+def api_remove_featured(repo_id: int):
+    from src.server import get_db_path
+    from src.db import remove_featured_repo
+
+    if not remove_featured_repo(repo_id, path=get_db_path()):
+        raise HTTPException(status_code=404, detail="Repo not in featured list")
     return {"status": "removed"}

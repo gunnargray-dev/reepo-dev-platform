@@ -78,7 +78,7 @@ export default function SubmitProject() {
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       <h1 className="text-xl font-semibold">Submit a Project</h1>
       <p className="mt-1 text-[14px] text-muted-foreground">
-        Show off something you built with open-source AI repos.
+        Show off something you built with open-source repos.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">

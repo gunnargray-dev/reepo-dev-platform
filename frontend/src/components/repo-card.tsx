@@ -31,7 +31,7 @@ export function RepoCard({ repo, showDelta, snippet, isBookmarked, onToggleBookm
       className="group relative flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-card px-4 py-3.5 transition-all duration-150 hover:border-border/80 hover:bg-accent/5 hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)] hover:-translate-y-px"
     >
       <img
-        src={`https://github.com/${repo.owner}.png?size=32`}
+        src={`https://github.com/${repo.owner}.png?size=64`}
         alt=""
         className="h-8 w-8 shrink-0 rounded-md mt-0.5"
       />

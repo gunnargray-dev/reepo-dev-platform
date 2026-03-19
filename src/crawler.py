@@ -1,4 +1,4 @@
-"""Reepo GitHub crawler — discover AI repos via GitHub Search API."""
+"""Reepo GitHub crawler — discover repos via GitHub Search API."""
 import asyncio
 import logging
 import time
@@ -11,11 +11,18 @@ from src.taxonomy import classify_repo
 logger = logging.getLogger(__name__)
 
 TOPICS = [
+    # AI / ML
     "machine-learning", "llm", "ai", "langchain", "agents",
     "transformers", "openai", "computer-vision", "nlp", "rag",
     "vector-database", "mlops", "deep-learning", "pytorch",
     "tensorflow", "huggingface", "stable-diffusion", "gpt",
     "chatbot", "embedding",
+    # Design / UI
+    "design-system", "ui-components", "react-components",
+    "component-library", "tailwindcss", "css-framework",
+    "icon-library", "svg-icons", "figma", "design-tokens",
+    "framer-motion", "animation", "typography", "web-fonts",
+    "headless-ui", "radix", "shadcn",
 ]
 
 KEYWORDS = [
@@ -23,6 +30,11 @@ KEYWORDS = [
     "llm tool",
     "agent framework",
     "ml pipeline",
+    "ui component library",
+    "design system",
+    "css framework",
+    "icon library",
+    "animation library",
 ]
 
 GITHUB_SEARCH_URL = "https://api.github.com/search/repositories"
