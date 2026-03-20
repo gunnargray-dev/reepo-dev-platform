@@ -259,7 +259,7 @@ export default function RepoDetail() {
                 ))}
               </div>
             )}
-            <ScoreSparkline data={history} />
+            {/* <ScoreSparkline data={history} /> */}
           </div>
         </aside>
       </div>
@@ -292,7 +292,7 @@ export default function RepoDetail() {
                 ))}
               </div>
             )}
-            <ScoreSparkline data={history} />
+            {/* <ScoreSparkline data={history} /> */}
           </CardContent>
         </Card>
       </div>

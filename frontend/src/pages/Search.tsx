@@ -150,7 +150,7 @@ export default function Search() {
               </div>
               <div>
                 <h3 className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Category</h3>
-                <div className="space-y-0.5 max-h-60 overflow-y-auto">
+                <div className="space-y-0.5">
                   <label className="flex cursor-pointer items-center gap-2 py-0.5 text-[13px] text-muted-foreground hover:text-foreground">
                     <input type="radio" name="category" checked={!category} onChange={() => updateParam('category', '')} className="accent-foreground" /> All
                   </label>
