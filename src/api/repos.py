@@ -28,10 +28,11 @@ def summarize_readme(readme_content: str, repo_name: str, description: str | Non
     desc_hint = f"\nGitHub description: {description}" if description else ""
 
     prompt = (
-        f"Read this README for {repo_name} and write one paragraph (3-5 sentences) "
-        f"summarizing what this project is and what it does. "
-        f"Focus on what it is and why it's useful, not how to install or use it. "
-        f"Write plain text only, no markdown formatting, no quotes around it.{desc_hint}\n\n"
+        f"Summarize this GitHub repo ({repo_name}) in 3-5 sentences. "
+        f"State what it is and what problem it solves. Be direct and specific. "
+        f"Do not reference that this is a repo or repository. Write as if describing the project itself. "
+        f"Never use the words 'ultimately', 'essentially', 'comprehensive', or 'landscape'. "
+        f"No marketing language. No quotes or markdown. Plain text only.{desc_hint}\n\n"
         f"README:\n{truncated}"
     )
 
