@@ -5,75 +5,80 @@ import { ScoreCard } from '@/components/score-card';
 import type { ScoreResult } from '@/lib/api';
 import { scoreRepo } from '@/lib/api';
 
-const SCAN_STEPS = [
-  { label: 'Fetching repository', icon: '{}' },
-  { label: 'Analyzing maintenance', icon: '//' },
-  { label: 'Reading documentation', icon: '##' },
-  { label: 'Measuring community', icon: '<>' },
-  { label: 'Calculating popularity', icon: '**' },
-  { label: 'Checking freshness', icon: '>>' },
-  { label: 'Reviewing license', icon: '()' },
-  { label: 'Computing score', icon: '::' },
+interface TermLine {
+  text: string;
+  delay: number;
+  color?: string;
+  bold?: boolean;
+}
+
+const TERM_LINES: TermLine[] = [
+  { text: '$ reepo analyze', delay: 0 },
+  { text: '', delay: 200 },
+  { text: 'Fetching repo metadata...', delay: 400 },
+  { text: 'Analyzing maintenance health...', delay: 1000 },
+  { text: 'Parsing documentation...', delay: 1600 },
+  { text: 'Measuring community activity...', delay: 2100 },
+  { text: 'Calculating popularity...', delay: 2500 },
+  { text: 'Checking freshness...', delay: 2900 },
+  { text: 'Reviewing license...', delay: 3200 },
+  { text: '', delay: 3500 },
+  { text: 'Computing final score...', delay: 3600 },
 ];
 
-function ScanAnimation() {
-  const [step, setStep] = useState(0);
-  const [dots, setDots] = useState('');
+function TerminalLoading({ repoInput }: { repoInput: string }) {
+  const [visibleCount, setVisibleCount] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const lines = TERM_LINES.map((line, i) => {
+    if (i === 0) {
+      const short = repoInput.replace(/^https?:\/\/(www\.)?github\.com\//, '').replace(/\/$/, '');
+      return { ...line, text: `$ reepo analyze ${short}` };
+    }
+    return line;
+  });
 
   useEffect(() => {
-    const stepInterval = setInterval(() => {
-      setStep((s) => (s + 1) % SCAN_STEPS.length);
-    }, 1400);
-    return () => clearInterval(stepInterval);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    lines.forEach((line, i) => {
+      timers.push(setTimeout(() => setVisibleCount(i + 1), line.delay));
+    });
+    return () => timers.forEach(clearTimeout);
   }, []);
 
   useEffect(() => {
-    const dotInterval = setInterval(() => {
-      setDots((d) => (d.length >= 3 ? '' : d + '.'));
-    }, 400);
-    return () => clearInterval(dotInterval);
-  }, []);
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [visibleCount]);
 
   return (
-    <div className="flex flex-col items-center gap-8 py-16">
-      {/* Scanning pulse */}
-      <div className="relative h-20 w-20">
-        <div className="absolute inset-0 animate-ping rounded-full bg-foreground/5" />
-        <div className="absolute inset-2 animate-ping rounded-full bg-foreground/5" style={{ animationDelay: '0.3s' }} />
-        <div className="absolute inset-0 flex items-center justify-center rounded-full border border-border bg-card">
-          <span
-            className="font-mono text-lg text-muted-foreground transition-all duration-300"
-            key={step}
-          >
-            {SCAN_STEPS[step].icon}
-          </span>
-        </div>
+    <div className="mx-auto mt-8 w-full max-w-lg overflow-hidden rounded-lg border border-white/10 bg-[#0d1117] font-mono text-[12px] leading-relaxed animate-fade-in">
+      <div className="flex items-center gap-1.5 border-b border-white/10 px-4 py-2">
+        <div className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
+        <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/80" />
+        <div className="h-2.5 w-2.5 rounded-full bg-green-500/80" />
+        <span className="ml-2 text-[10px] text-white/30">reepo score</span>
       </div>
-
-      {/* Step label */}
-      <div className="flex flex-col items-center gap-2">
-        <span
-          className="text-[14px] font-medium text-foreground transition-all duration-300"
-          key={`label-${step}`}
-          style={{ animation: 'fade-in 0.3s ease' }}
-        >
-          {SCAN_STEPS[step].label}{dots}
-        </span>
-
-        {/* Step indicators */}
-        <div className="flex items-center gap-1.5 mt-2">
-          {SCAN_STEPS.map((_, i) => (
-            <div
-              key={i}
-              className="h-1 rounded-full transition-all duration-500"
-              style={{
-                width: i === step ? 16 : 4,
-                backgroundColor: i <= step ? 'var(--fg)' : 'var(--border)',
-                opacity: i <= step ? 1 : 0.4,
-              }}
-            />
-          ))}
-        </div>
+      <div ref={containerRef} className="p-4 text-white/70 min-h-[220px]">
+        {lines.slice(0, visibleCount).map((line, i) => (
+          <div
+            key={i}
+            style={{
+              color: line.color,
+              fontWeight: line.bold ? 700 : 400,
+              animation: 'fade-in 0.15s ease',
+            }}
+          >
+            {line.text || '\u00A0'}
+          </div>
+        ))}
+        {visibleCount < lines.length && (
+          <span className="inline-block w-2 h-4 bg-white/60 animate-pulse" />
+        )}
+        {visibleCount >= lines.length && (
+          <span className="inline-block w-2 h-4 bg-green-400/80 animate-pulse" />
+        )}
       </div>
     </div>
   );
@@ -102,7 +107,7 @@ export default function Score() {
     setLoading(true);
     setError('');
     setResult(null);
-    const minDelay = new Promise((r) => setTimeout(r, 4000));
+    const minDelay = new Promise((r) => setTimeout(r, 4500));
     try {
       const [data] = await Promise.all([scoreRepo(input.trim()), minDelay]);
       setResult(data);
@@ -169,12 +174,12 @@ export default function Score() {
         </div>
       )}
 
-      {/* Loading animation */}
-      {loading && <ScanAnimation />}
+      {/* Terminal loading animation */}
+      {loading && <TerminalLoading repoInput={url} />}
 
       {/* Result card */}
       {result && (
-        <div className="mt-6">
+        <div className="mt-6 animate-fade-in">
           <ScoreCard result={result} />
           <div className="mt-6 text-center">
             <Button variant="ghost" size="sm" className="text-[13px] text-muted-foreground" onClick={handleScoreAnother}>

@@ -82,7 +82,7 @@ function AnimatedScore({ value, color }: { value: number; color: string }) {
 
   return (
     <span
-      className="font-mono text-5xl font-bold tabular-nums leading-none"
+      className="font-mono text-4xl font-bold tabular-nums leading-none"
       style={{ color }}
     >
       {display}
@@ -257,7 +257,7 @@ export function ScoreCard({ result }: ScoreCardProps) {
             </div>
 
             <div className="flex-shrink-0">
-              <ScoreRing score={result.reepo_score} size={120} />
+              <ScoreRing score={result.reepo_score} size={100} />
             </div>
           </div>
 
@@ -276,38 +276,29 @@ export function ScoreCard({ result }: ScoreCardProps) {
             ))}
           </div>
 
-          {/* Branding */}
-          <div className="mt-5 flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <img src="/reepo-logo.svg" alt="Reepo" className="h-2.5 invert dark:invert-0" />
-              <span className="text-[10px] text-muted-foreground/60 font-medium">score</span>
-            </div>
-            {result.repo.category && (
-              <span className="text-[10px] text-muted-foreground/60">
-                {result.repo.category}
-              </span>
-            )}
-          </div>
         </div>
 
-        {/* Actions bar */}
-        <div className="flex items-center justify-center gap-2 border-t border-border/60 bg-muted/30 px-6 py-3">
-          <Button variant="ghost" size="sm" className="h-8 text-[12px]" onClick={handleCopy}>
-            {copied ? <Check className="mr-1.5 h-3 w-3" /> : <Copy className="mr-1.5 h-3 w-3" />}
-            {copied ? 'Copied' : 'Share'}
-          </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-[12px]" asChild>
-            <a href={result.repo.url} target="_blank" rel="noopener noreferrer">
-              <Github className="mr-1.5 h-3 w-3" />
-              GitHub
-              <ExternalLink className="ml-1 h-2.5 w-2.5" />
-            </a>
-          </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-[12px]" asChild>
-            <Link to={`/repo/${result.repo.owner}/${result.repo.name}`}>
-              View details
-            </Link>
-          </Button>
+        {/* Footer: branding left, action icons right */}
+        <div className="flex items-center justify-between border-t border-border/60 bg-muted/30 px-6 py-3">
+          <div className="flex items-center gap-1.5">
+            <img src="/reepo-logo.svg" alt="Reepo" className="h-2.5 invert dark:invert-0" />
+            <span className="text-[10px] text-muted-foreground/60 font-medium">score</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={handleCopy} title={copied ? 'Copied!' : 'Copy link'}>
+              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" asChild title="View on GitHub">
+              <a href={result.repo.url} target="_blank" rel="noopener noreferrer">
+                <Github className="h-3.5 w-3.5" />
+              </a>
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" asChild title="View details">
+              <Link to={`/repo/${result.repo.owner}/${result.repo.name}`}>
+                <ExternalLink className="h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </div>

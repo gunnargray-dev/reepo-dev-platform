@@ -17,6 +17,7 @@ import Projects from '@/pages/Projects';
 import SubmitProject from '@/pages/SubmitProject';
 import Score from '@/pages/Score';
 import CardVariants from '@/pages/CardVariants';
+import LoadingVariants from '@/pages/LoadingVariants';
 
 export default function App() {
   return (
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/projects" element={<Projects />} />
         <Route path="/score" element={<Score />} />
         <Route path="/card-variants" element={<CardVariants />} />
+        <Route path="/loading-variants" element={<LoadingVariants />} />
       </Routes>
     </Layout>
   );
