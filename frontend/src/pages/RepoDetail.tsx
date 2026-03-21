@@ -195,10 +195,10 @@ export default function RepoDetail() {
           </div>
 
           {/* Summary */}
-          {(readme || repo.description) && (
+          {(repo.readme_excerpt || readme || repo.description) && (
             <div className="mt-6">
               <h2 className="mb-2 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">About</h2>
-              <p className="text-[14px] leading-relaxed text-foreground/80">{readme || repo.description}</p>
+              <p className="text-[14px] leading-relaxed text-foreground/80">{repo.readme_excerpt || readme || repo.description}</p>
             </div>
           )}
 
