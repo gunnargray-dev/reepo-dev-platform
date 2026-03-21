@@ -16,14 +16,17 @@ _MAX_QUERY_LENGTH = 500
 
 
 def init_fts(path: str = DEFAULT_DB_PATH) -> None:
-    """Create FTS5 virtual table and populate from repos table."""
+    """Create FTS5 virtual table and populate from repos table (skip if already populated)."""
     conn = _connect(path)
     conn.execute(
         "CREATE VIRTUAL TABLE IF NOT EXISTS repos_fts USING fts5("
         "full_name, description, readme_excerpt, topics_text, use_cases_text"
         ")"
     )
-    conn.execute("DELETE FROM repos_fts")
+    count = conn.execute("SELECT COUNT(*) FROM repos_fts").fetchone()[0]
+    if count > 0:
+        conn.close()
+        return
     conn.execute(
         "INSERT INTO repos_fts(rowid, full_name, description, readme_excerpt, topics_text, use_cases_text) "
         "SELECT id, full_name, COALESCE(description, ''), COALESCE(readme_excerpt, ''), "
