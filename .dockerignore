@@ -7,7 +7,7 @@ __pycache__/
 .git/
 .env
 *.db
-!data/reepo.db
+!data/*.db
 .pytest_cache/
 htmlcov/
 node_modules/
