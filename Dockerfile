@@ -6,6 +6,7 @@ COPY pyproject.toml .
 RUN pip install --no-cache-dir .
 
 COPY src/ src/
+COPY data/ data/
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
