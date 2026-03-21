@@ -207,7 +207,7 @@ export default function RepoDetail() {
             <div className="mt-8 pt-6 border-t border-border/50">
               <h2 className="mb-3 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Use cases</h2>
               <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {useCases.map((c) => (
+                {useCases.map((c: string) => (
                   <li key={c} className="flex items-start gap-2 text-[14px] text-foreground/80">
                     <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
                     {c}
@@ -234,7 +234,7 @@ export default function RepoDetail() {
 
         {/* Sidebar — Score */}
         <aside className="hidden w-56 shrink-0 lg:block">
-          <div className="sticky top-20 rounded-lg border border-border/50 bg-card p-4 border-l-2" style={{ borderLeftColor: scoreColor }}>
+          <div className="sticky top-20 rounded-lg border border-border/50 bg-card p-4">
             <div className="flex items-center gap-2">
               <div
                 className="text-4xl font-bold font-mono tabular-nums"
@@ -266,7 +266,7 @@ export default function RepoDetail() {
 
       {/* Mobile score — below content on small screens */}
       <div className="mt-8 lg:hidden">
-        <Card className="border-l-2" style={{ borderLeftColor: scoreColor }}>
+        <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <div
