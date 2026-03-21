@@ -8,6 +8,8 @@ from pydantic import BaseModel
 
 from src.analyzer import analyze_repo
 from src.taxonomy import classify_repo
+from src.db import upsert_repo
+from src.server import get_db_path
 
 router = APIRouter()
 
@@ -83,8 +85,16 @@ async def score_repo(req: ScoreRequest):
     primary, secondary = classify_repo(repo["name"], repo["description"], repo["topics"])
     result = analyze_repo(repo)
 
+    # Persist to DB so the repo is searchable and can be featured
+    repo["category_primary"] = primary
+    repo["category_secondary"] = secondary
+    repo["reepo_score"] = result["reepo_score"]
+    repo["score_breakdown"] = result["score_breakdown"]
+    repo_id = upsert_repo(repo, path=get_db_path())
+
     return {
         "repo": {
+            "id": repo_id,
             "owner": repo["owner"],
             "name": repo["name"],
             "full_name": repo["full_name"],
