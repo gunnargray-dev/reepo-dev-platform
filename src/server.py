@@ -80,6 +80,7 @@ def create_app(db_path: str | None = None) -> FastAPI:
     from src.api.discord import router as discord_router
     from src.api.score_history import router as score_history_router
     from src.api.score import router as score_router
+    from src.api.db_upload import router as db_upload_router
 
     application.include_router(search_router)
     application.include_router(repos_router)
@@ -112,6 +113,7 @@ def create_app(db_path: str | None = None) -> FastAPI:
     application.include_router(discord_router)
     application.include_router(score_history_router)
     application.include_router(score_router)
+    application.include_router(db_upload_router)
 
     @application.on_event("startup")
     def startup():

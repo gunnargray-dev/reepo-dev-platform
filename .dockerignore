@@ -6,8 +6,7 @@ __pycache__/
 *.pyc
 .git/
 .env
-*.db
-!data/*.db
+# DB files included for Railway volume seeding
 .pytest_cache/
 htmlcov/
 node_modules/
