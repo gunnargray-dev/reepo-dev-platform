@@ -77,6 +77,24 @@ const TOPIC_USE_CASES: Record<string, string[]> = {
   'ollama': ['Run LLMs locally on your machine', 'Build offline AI applications'],
   'comfyui': ['Design complex image generation workflows', 'Build node-based AI pipelines'],
 
+  // Design & UI
+  'design-system': ['Build consistent cross-platform design systems', 'Manage design tokens and themes'],
+  'design-tokens': ['Standardize colors, spacing, and typography', 'Sync design decisions to code'],
+  'tailwindcss': ['Rapidly style UIs with utility classes', 'Build custom design systems on Tailwind'],
+  'css-framework': ['Scaffold responsive layouts quickly', 'Style apps with minimal custom CSS'],
+  'css-in-js': ['Co-locate styles with components', 'Build dynamic, theme-aware styling'],
+  'react-components': ['Ship UI faster with pre-built React components', 'Build accessible component libraries'],
+  'ui-components': ['Assemble interfaces from battle-tested components', 'Maintain UI consistency at scale'],
+  'icons': ['Add scalable vector icons to any project', 'Build custom icon sets'],
+  'svg': ['Create resolution-independent graphics', 'Build animated SVG illustrations'],
+  'animation': ['Add fluid motion to user interfaces', 'Build scroll-driven animations'],
+  'framer-motion': ['Animate React components declaratively', 'Build gesture-driven interactions'],
+  'gsap': ['Create high-performance web animations', 'Build complex animation timelines'],
+  'lottie': ['Play After Effects animations on the web', 'Add micro-interactions to your app'],
+  'figma': ['Bridge design and development workflows', 'Export Figma designs to code'],
+  'material-design': ['Build apps with Material Design components', 'Follow Google design guidelines'],
+  'ant-design': ['Build enterprise UIs with Ant Design', 'Create data-dense admin interfaces'],
+
   // Dev tools
   'cli': ['Build command-line AI tools', 'Automate terminal workflows with AI'],
   'api': ['Integrate AI capabilities via APIs', 'Build AI-powered backend services'],
@@ -96,6 +114,12 @@ const CATEGORY_USE_CASES: Record<string, string[]> = {
   'infrastructure': ['Deploy and scale ML systems', 'Manage the ML model lifecycle'],
   'skills-plugins': ['Extend AI platforms with custom capabilities', 'Connect AI to external services'],
   'libraries': ['Add AI capabilities to your codebase', 'Process text, images, or embeddings'],
+  'ui-components': ['Build polished interfaces with pre-built components', 'Ship consistent UI across your app'],
+  'design-systems': ['Maintain visual consistency across products', 'Standardize design tokens and components'],
+  'css-styling': ['Style applications with utility-first CSS', 'Build responsive layouts efficiently'],
+  'icons-assets': ['Add icons and illustrations to your UI', 'Build visually rich interfaces'],
+  'animation': ['Add motion and transitions to your UI', 'Build interactive, animated experiences'],
+  'design-tools': ['Prototype and wireframe interfaces', 'Collaborate on visual design'],
 };
 
 export function getUseCases(

@@ -16,6 +16,12 @@ CATEGORIES = [
     ("infrastructure", "Infrastructure", "MLOps, deployment, and infrastructure tooling"),
     ("skills-plugins", "Skills & Plugins", "Plugins, extensions, and integrations for AI platforms"),
     ("libraries", "Libraries", "General-purpose AI/ML libraries and components"),
+    ("ui-components", "UI Components", "React, Vue, and other frontend component libraries"),
+    ("design-systems", "Design Systems", "Design tokens, style guides, and component systems"),
+    ("css-styling", "CSS & Styling", "CSS frameworks, utility libraries, and styling tools"),
+    ("icons-assets", "Icons & Assets", "Icon libraries, illustrations, and visual assets"),
+    ("animation", "Animation", "Animation libraries, motion, and transition tools"),
+    ("design-tools", "Design Tools", "Whiteboards, diagramming, prototyping, and design utilities"),
 ]
 
 SCHEMA = """
