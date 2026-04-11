@@ -24,7 +24,7 @@ export default function Trending() {
   }, [period]);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <h1 className="text-xl font-semibold text-foreground mb-6 animate-slide-up">Trending</h1>
 
       <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)} className="mb-6 animate-fade-in" style={{ animationDelay: '0.05s' }}>
@@ -41,9 +41,9 @@ export default function Trending() {
           <p className="text-[14px] text-muted-foreground">Trending data appears after multiple crawl cycles.</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {trending.map((repo, index) => (
-            <div key={repo.id} className="flex items-center gap-3">
+            <div key={repo.id} className="flex min-w-0 items-center gap-3">
               <span className="w-6 shrink-0 text-right font-mono text-[13px] tabular-nums text-muted-foreground">{index + 1}</span>
               <div className="min-w-0 flex-1"><RepoCard repo={repo} showDelta={repo.star_delta} /></div>
             </div>

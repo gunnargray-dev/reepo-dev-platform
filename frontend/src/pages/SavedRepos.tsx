@@ -48,7 +48,7 @@ export default function SavedRepos() {
           </Button>
         </div>
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-2">
+        <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2">
           {repos.map((r) => <RepoCard key={r.id} repo={r} />)}
         </div>
       )}

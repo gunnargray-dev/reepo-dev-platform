@@ -68,7 +68,7 @@ export default function Category() {
   const hasFilters = activeTag || language;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <div className="flex items-start justify-between gap-4 animate-slide-up">
         <div>
           <h1 className="text-xl font-semibold text-foreground">{category?.name || slug}</h1>
@@ -148,7 +148,7 @@ export default function Category() {
           </div>
         ) : (
           <div key={resultKey.current} className="animate-fade-in">
-            <div className="space-y-2">{repos.map((repo) => <RepoCard key={repo.id} repo={repo} />)}</div>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{repos.map((repo) => <RepoCard key={repo.id} repo={repo} />)}</div>
             <Pagination page={page} totalPages={totalPages} onPageChange={(p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
           </div>
         )}
