@@ -58,7 +58,7 @@ export function NetworkBg() {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 h-full w-full"
+      className="absolute inset-0 h-full w-full opacity-0 [mask-image:linear-gradient(to_bottom,black_0%,black_30%,transparent_95%)] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_30%,transparent_95%)] motion-safe:animate-[fade-in_0.9s_cubic-bezier(0.16,1,0.3,1)_forwards] motion-reduce:opacity-100"
     />
   )
 }

@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Sparkles, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CategoryCard } from '@/components/category-card';
 import { RepoCard } from '@/components/repo-card';
 import { NetworkBg } from '@/components/network-bg';
+import { BlockGridBg } from '@/components/block-grid-bg';
 import type { CategoryInfo, StatsResponse, Repo } from '@/lib/api';
 import { getCategories, getStats, searchRepos, getTrending, getFeatured } from '@/lib/api';
 import { formatNumber } from '@/lib/utils';
@@ -26,7 +28,7 @@ const QUICK_SEARCHES = [
 ];
 
 export default function Home() {
-  const { user, loading: authLoading, signIn } = useAuth();
+  const { user, signIn } = useAuth();
   const [categories, setCategories] = useState<CategoryInfo[]>([]);
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [categoryRepos, setCategoryRepos] = useState<Record<string, { full_name: string; owner: string }[]>>({});
@@ -67,8 +69,9 @@ export default function Home() {
 
   return (
     <div className="relative">
-      {/* Interactive network background */}
+      {/* Drafting grid + interactive network background */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[520px] overflow-hidden sm:h-[600px]" aria-hidden="true">
+          <BlockGridBg />
           <NetworkBg />
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[800px] rounded-full bg-[radial-gradient(ellipse_at_center,var(--glow-center)_0%,var(--glow-mid)_40%,transparent_70%)] opacity-60 blur-[20px]" />
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-background" />
@@ -76,14 +79,23 @@ export default function Home() {
 
       {/* Hero */}
       <section className="relative z-10 px-4 py-20 sm:py-28">
-        <div className="mx-auto max-w-2xl text-center animate-slide-up">
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-5xl leading-[1.1]">
-Discover, save, and share the best open source repos
+        <div className="mx-auto max-w-2xl text-center">
+          <h1
+            className="text-3xl font-semibold tracking-tight text-foreground sm:text-5xl leading-[1.1] motion-safe:animate-slide-up"
+            style={{ animationDelay: '40ms' }}
+          >
+            Discover, save, and share the best open source repos
           </h1>
-          <p className="mt-3 text-[15px] text-muted-foreground">
+          <p
+            className="mt-3 text-[15px] text-muted-foreground motion-safe:animate-slide-up"
+            style={{ animationDelay: '120ms' }}
+          >
             Reepo scores open source projects on maintenance, docs, community, and more.
           </p>
-          <div className="mt-8 flex justify-center">
+          <div
+            className="mt-8 flex justify-center motion-safe:animate-slide-up"
+            style={{ animationDelay: '200ms' }}
+          >
             <Button
               variant="outline"
               className="h-11 w-full max-w-md justify-start rounded-lg border-border text-muted-foreground"
@@ -100,7 +112,10 @@ Discover, save, and share the best open source repos
           </div>
 
           {/* Quick search chips */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5">
+          <div
+            className="mt-4 flex flex-wrap items-center justify-center gap-1.5 motion-safe:animate-slide-up"
+            style={{ animationDelay: '280ms' }}
+          >
             {QUICK_SEARCHES.map((q) => (
               <Link
                 key={q}
@@ -112,54 +127,77 @@ Discover, save, and share the best open source repos
             ))}
           </div>
 
-          <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-border to-transparent" />
+          <div
+            className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-border to-transparent motion-safe:animate-fade-in"
+            style={{ animationDelay: '360ms' }}
+          />
         </div>
       </section>
 
       {/* Trending */}
-      {trending.length > 0 && (
-        <section className="relative z-10 mx-auto max-w-5xl px-4 pb-14 sm:px-6 animate-fade-in" style={{ animationDelay: '0.05s' }}>
-          <h2 className="mb-4 flex items-center gap-2 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">
-            <TrendingUp className="h-3.5 w-3.5" />
-            {trending[0]?.star_delta ? 'Trending this week' : 'Top scored'}
-          </h2>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {trending.map((repo) => (
-              <RepoCard key={repo.id} repo={repo} showDelta={repo.star_delta} />
-            ))}
-          </div>
-        </section>
-      )}
+      <section
+        className="relative z-10 mx-auto max-w-5xl px-4 pb-14 sm:px-6 motion-safe:animate-slide-up"
+        style={{ animationDelay: '320ms' }}
+      >
+        <h2 className="mb-4 flex items-center gap-2 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">
+          <TrendingUp className="h-3.5 w-3.5" />
+          {trending.length > 0 && trending[0]?.star_delta ? 'Trending this week' : 'Top scored'}
+        </h2>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {trending.length > 0
+            ? trending.map((repo) => (
+                <div key={repo.id} className="motion-safe:animate-fade-in">
+                  <RepoCard repo={repo} showDelta={repo.star_delta} />
+                </div>
+              ))
+            : Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-[92px] rounded-xl" />)}
+        </div>
+      </section>
 
       {/* Featured */}
-      {featured.length > 0 && (
-        <section className="relative z-10 mx-auto max-w-5xl px-4 pb-14 sm:px-6 animate-fade-in" style={{ animationDelay: '0.08s' }}>
-          <h2 className="mb-4 flex items-center gap-2 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5" />
-            Featured
-          </h2>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {featured.map((repo) => (
-              <RepoCard key={repo.id} repo={repo} />
-            ))}
-          </div>
-        </section>
-      )}
+      <section
+        className="relative z-10 mx-auto max-w-5xl px-4 pb-14 sm:px-6 motion-safe:animate-slide-up"
+        style={{ animationDelay: '400ms' }}
+      >
+        <h2 className="mb-4 flex items-center gap-2 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">
+          <Sparkles className="h-3.5 w-3.5" />
+          Featured
+        </h2>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {featured.length > 0
+            ? featured.map((repo) => (
+                <div key={repo.id} className="motion-safe:animate-fade-in">
+                  <RepoCard repo={repo} />
+                </div>
+              ))
+            : Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[92px] rounded-xl" />)}
+        </div>
+      </section>
 
       {/* Categories */}
-      {categories.length > 0 && (
-        <section className="relative z-10 mx-auto max-w-5xl px-4 pb-14 sm:px-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-          <h2 className="mb-4 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Categories</h2>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-            {categories.map((cat) => <CategoryCard key={cat.slug} category={cat} topRepos={categoryRepos[cat.slug]} />)}
-          </div>
-        </section>
-      )}
+      <section
+        className="relative z-10 mx-auto max-w-5xl px-4 pb-14 sm:px-6 motion-safe:animate-slide-up"
+        style={{ animationDelay: '480ms' }}
+      >
+        <h2 className="mb-4 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Categories</h2>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+          {categories.length > 0
+            ? categories.map((cat) => (
+                <div key={cat.slug} className="motion-safe:animate-fade-in">
+                  <CategoryCard category={cat} topRepos={categoryRepos[cat.slug]} />
+                </div>
+              ))
+            : Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-[120px] rounded-xl" />)}
+        </div>
+      </section>
 
       {/* CTAs */}
-      <section className="relative z-10 mx-auto max-w-5xl px-4 py-20 sm:px-6">
+      <section
+        className="relative z-10 mx-auto max-w-5xl px-4 py-20 sm:px-6 motion-safe:animate-slide-up"
+        style={{ animationDelay: '560ms' }}
+      >
         <div className="mx-auto h-px w-24 bg-gradient-to-r from-transparent via-border to-transparent mb-16" />
-        <div className={`grid gap-6 ${!authLoading && !user ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 max-w-md mx-auto'}`}>
+        <div className={`grid gap-6 ${user ? 'grid-cols-1 max-w-md mx-auto' : 'grid-cols-1 sm:grid-cols-2'}`}>
           {/* Score CTA */}
           <div className="rounded-xl border border-border/60 p-8 text-center">
             <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
@@ -174,7 +212,7 @@ Discover, save, and share the best open source repos
           </div>
 
           {/* Sign up CTA */}
-          {!authLoading && !user && (
+          {!user && (
             <div className="rounded-xl border border-border/60 p-8 text-center">
               <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
                 Save and share repos
