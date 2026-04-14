@@ -387,6 +387,147 @@ def _compose_stack_stream(
     yield {"__final": True, "total_picks": emitted, "notes": notes or ""}
 
 
+# ---------- sync pipeline (shared with /api/search ai-mode) ----------
+
+def run_build_pipeline_sync(query: str, path: str | None = None) -> dict:
+    """Run the full build pipeline synchronously and return a JSON-shaped dict.
+
+    Used by GET /api/search when routing NL queries through AI. Honors the same
+    ai_query_cache as the SSE endpoint so identical queries from either route
+    share a 24h TTL cache entry.
+
+    Returns:
+      {
+        "query": str,
+        "intent": dict,
+        "picks": [ {"repo_id": int, "repo": str, "role": str, "why": str}, ... ],
+        "degraded": bool,
+        "notes": str,
+        "cached": bool,
+        "error": Optional[str],
+      }
+    """
+    query = (query or "").strip()
+    if not query:
+        return {
+            "query": "",
+            "intent": {},
+            "picks": [],
+            "degraded": False,
+            "notes": "",
+            "cached": False,
+            "error": "query is required",
+        }
+
+    if path is None:
+        path = _db_path()
+
+    qhash = _hash_query(query)
+    cached = _cache_get(qhash, path)
+    if cached is not None:
+        intent: dict = {}
+        picks: list[dict] = []
+        notes = ""
+        degraded = False
+        for event, data in cached:
+            if event == "intent":
+                intent = data or {}
+            elif event == "candidates":
+                if data.get("degraded"):
+                    degraded = True
+            elif event == "degraded":
+                if data.get("degraded"):
+                    degraded = True
+            elif event == "pick":
+                picks.append(data)
+            elif event == "done":
+                notes = data.get("notes", "") or ""
+        return {
+            "query": query,
+            "intent": intent,
+            "picks": picks,
+            "degraded": degraded,
+            "notes": notes,
+            "cached": True,
+            "error": None,
+        }
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        return {
+            "query": query,
+            "intent": {},
+            "picks": [],
+            "degraded": True,
+            "notes": "",
+            "cached": False,
+            "error": "ANTHROPIC_API_KEY not configured",
+        }
+
+    try:
+        ai_client = anthropic.Anthropic(api_key=api_key)
+    except Exception as e:  # noqa: BLE001
+        return {
+            "query": query,
+            "intent": {},
+            "picks": [],
+            "degraded": True,
+            "notes": "",
+            "cached": False,
+            "error": f"anthropic client init failed: {e}",
+        }
+
+    events: list[tuple[str, dict]] = []
+
+    intent = _extract_intent(query, ai_client)
+    events.append(("intent", intent))
+
+    vec_query_text = query + " " + " ".join(intent.get("capabilities", []))
+    vec_hits = _vec_search(vec_query_text, path)
+    fts_ids = _fts_candidates(query, path)
+    vec_available = bool(vec_hits)
+    if not vec_available:
+        events.append(("degraded", {"degraded": True, "reason": "vector_search_unavailable"}))
+
+    merged = _rrf_merge([v[0] for v in vec_hits], fts_ids)
+    if not merged and fts_ids:
+        merged = fts_ids[:CANDIDATE_LIMIT]
+    events.append(("candidates", {"repo_ids": merged, "degraded": not vec_available}))
+
+    picks: list[dict] = []
+    notes = ""
+    if not merged:
+        events.append(("done", {"total_picks": 0, "notes": "no candidate repos found"}))
+    else:
+        repos = _load_repos(merged, path)
+        top = _structural_rerank(repos, intent)
+        if not top:
+            events.append(("done", {"total_picks": 0, "notes": "no usable candidates after rerank"}))
+        else:
+            for item in _compose_stack_stream(intent, top, ai_client):
+                if item.get("__final"):
+                    notes = item.get("notes", "") or ""
+                    events.append(("done", {"total_picks": item.get("total_picks", 0), "notes": notes}))
+                    break
+                picks.append(item)
+                events.append(("pick", item))
+
+    try:
+        _cache_set(qhash, query, events, path)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("cache write failed: %s", e)
+
+    return {
+        "query": query,
+        "intent": intent,
+        "picks": picks,
+        "degraded": not vec_available,
+        "notes": notes,
+        "cached": False,
+        "error": None,
+    }
+
+
 # ---------- endpoint ----------
 
 @router.post("/api/build")
