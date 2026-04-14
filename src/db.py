@@ -3,6 +3,8 @@ import json
 import sqlite3
 from pathlib import Path
 
+import sqlite_vec
+
 DEFAULT_DB_PATH = "data/reepo.db"
 
 CATEGORIES = [
@@ -85,11 +87,34 @@ CREATE INDEX IF NOT EXISTS idx_repos_language ON repos(language);
 CREATE INDEX IF NOT EXISTS idx_repos_updated ON repos(updated_at DESC);
 """
 
+# Embedding-related schema objects. Applied separately from SCHEMA because the
+# vec0 virtual table requires the sqlite-vec extension to be loaded on the
+# connection and because we need idempotent ALTER TABLE guards for the new
+# columns on `repos`.
+EMBEDDINGS_VEC_SCHEMA = (
+    "CREATE VIRTUAL TABLE IF NOT EXISTS repo_embeddings USING vec0("
+    "repo_id INTEGER PRIMARY KEY, embedding FLOAT[512])"
+)
+REPOS_EMBEDDING_COLUMNS = (
+    ("embedding_version", "INTEGER"),
+    ("embedded_at", "TEXT"),
+)
+
 
 def _connect(path: str) -> sqlite3.Connection:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row
+    # Load the sqlite-vec extension so vec0 virtual tables are queryable on
+    # every connection. Safe to call repeatedly.
+    try:
+        conn.enable_load_extension(True)
+        sqlite_vec.load(conn)
+        conn.enable_load_extension(False)
+    except (AttributeError, sqlite3.OperationalError):
+        # Some Python builds disable extension loading; operate without vec
+        # support in that case so non-embedding code paths still work.
+        pass
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
@@ -98,6 +123,16 @@ def _connect(path: str) -> sqlite3.Connection:
 def init_db(path: str = DEFAULT_DB_PATH) -> None:
     conn = _connect(path)
     conn.executescript(SCHEMA)
+    # Embeddings: vec0 virtual table + idempotent column adds on `repos`.
+    try:
+        conn.execute(EMBEDDINGS_VEC_SCHEMA)
+    except sqlite3.OperationalError:
+        # Extension wasn't loadable on this connection — skip silently.
+        pass
+    existing_cols = {row[1] for row in conn.execute("PRAGMA table_info('repos')").fetchall()}
+    for col_name, col_type in REPOS_EMBEDDING_COLUMNS:
+        if col_name not in existing_cols:
+            conn.execute(f"ALTER TABLE repos ADD COLUMN {col_name} {col_type}")
     for slug, name, description in CATEGORIES:
         conn.execute(
             "INSERT OR IGNORE INTO categories (slug, name, description) VALUES (?, ?, ?)",
