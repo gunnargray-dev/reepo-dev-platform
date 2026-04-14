@@ -2,10 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, Send, X, AlertCircle, Bookmark, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { postSSE } from '@/lib/sse';
 import { getAccessToken } from '@/lib/auth';
+import {
+  StackPickCard,
+  IntentChips,
+  type BuildIntent as Intent,
+  type StackPick as Pick,
+} from '@/components/AIStack';
 
 const EXAMPLES = [
   'real-time vector search',
@@ -14,72 +19,12 @@ const EXAMPLES = [
   'summarize PDFs locally',
 ];
 
-interface Intent {
-  capabilities?: string[];
-  constraints?: string[];
-  language?: string | null;
-  scale?: string | null;
-}
-
-interface Pick {
-  repo_id: number;
-  repo: string;
-  role: string;
-  why: string;
-  // Optional repo card fields (populated when backend includes them).
-  description?: string | null;
-  stars?: number;
-  reepo_score?: number | null;
-  language?: string | null;
-  topics?: string[];
-  category_primary?: string | null;
-  license?: string | null;
-  updated_at?: string | null;
-}
-
 interface DoneEvent {
   total_picks: number;
   notes?: string;
 }
 
 type Status = 'idle' | 'streaming' | 'done' | 'error';
-
-function StackPickCard({ pick, index }: { pick: Pick; index: number }) {
-  const [owner, name] = pick.repo.includes('/') ? pick.repo.split('/') : [null, pick.repo];
-  return (
-    <div
-      className="rounded-xl border border-border/60 bg-background p-5 motion-safe:animate-fade-in"
-      style={{ animationDelay: `${index * 60}ms` }}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <Badge variant="secondary" className="text-[11px]">
-            {pick.role || 'component'}
-          </Badge>
-          {owner ? (
-            <Link
-              to={`/repo/${owner}/${name}`}
-              className="text-[15px] font-medium text-foreground hover:underline truncate"
-            >
-              <span className="text-muted-foreground">{owner}/</span>
-              {name}
-            </Link>
-          ) : (
-            <span className="text-[15px] font-medium text-foreground truncate">{pick.repo}</span>
-          )}
-        </div>
-      </div>
-      <p className="mt-3 text-[13.5px] leading-relaxed text-foreground/90">{pick.why}</p>
-      {(pick.stars !== undefined || pick.language || pick.reepo_score !== undefined) && (
-        <div className="mt-3 flex items-center gap-3 text-[12px] text-muted-foreground">
-          {pick.stars !== undefined && <span>{pick.stars.toLocaleString()} stars</span>}
-          {pick.language && <span>{pick.language}</span>}
-          {pick.reepo_score != null && <span>Reepo {Math.round(pick.reepo_score)}</span>}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function Build() {
   const [query, setQuery] = useState('');
@@ -251,11 +196,6 @@ export default function Build() {
   }
 
   const isStreaming = status === 'streaming';
-  const intentChips = [
-    ...(intent?.capabilities ?? []).map((c) => ({ label: c, kind: 'cap' as const })),
-    ...(intent?.constraints ?? []).map((c) => ({ label: c, kind: 'con' as const })),
-    ...(intent?.language ? [{ label: intent.language, kind: 'lang' as const }] : []),
-  ];
 
   return (
     <div className="relative">
@@ -360,24 +300,7 @@ export default function Build() {
           )}
 
           {/* Intent chips */}
-          {intentChips.length > 0 && (
-            <div className="mb-6">
-              <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                Intent
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {intentChips.map((c, i) => (
-                  <Badge
-                    key={`${c.kind}-${c.label}-${i}`}
-                    variant={c.kind === 'lang' ? 'outline' : 'secondary'}
-                    className="text-[11px]"
-                  >
-                    {c.label}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
+          <IntentChips intent={intent} />
 
           {/* Degraded notice */}
           {degraded && (
