@@ -16,6 +16,7 @@ import {
 
 
 const NAV_LINKS = [
+  { to: '/build', label: 'Build' },
   { to: '/search', label: 'Search' },
   { to: '/score', label: 'Score' },
   { to: '/projects', label: 'Projects' },
