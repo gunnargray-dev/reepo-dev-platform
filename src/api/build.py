@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 HAIKU_MODEL = "claude-haiku-4-5-20251001"
-SONNET_MODEL = "claude-sonnet-4-5-20250929"  # sonnet 4.5 (confirm via Anthropic model list)
+SONNET_MODEL = "claude-sonnet-4-6"
 CACHE_TTL = timedelta(hours=24)
 RRF_K = 60
 CANDIDATE_LIMIT = 50
