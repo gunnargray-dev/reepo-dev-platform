@@ -88,6 +88,14 @@ CREATE INDEX IF NOT EXISTS idx_repos_score ON repos(reepo_score DESC);
 CREATE INDEX IF NOT EXISTS idx_repos_category ON repos(category_primary);
 CREATE INDEX IF NOT EXISTS idx_repos_language ON repos(language);
 CREATE INDEX IF NOT EXISTS idx_repos_updated ON repos(updated_at DESC);
+
+CREATE TABLE IF NOT EXISTS ai_query_cache (
+    query_hash TEXT PRIMARY KEY,
+    query TEXT NOT NULL,
+    response_json TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_ai_query_cache_created ON ai_query_cache(created_at);
 """
 
 # Embedding-related schema objects. Applied separately from SCHEMA because the
