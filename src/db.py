@@ -1,9 +1,12 @@
 """Reepo database layer — SQLite storage for repos, scores, and categories."""
 import json
+import logging
 import sqlite3
 from pathlib import Path
 
 import sqlite_vec
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_DB_PATH = "data/reepo.db"
 
@@ -107,14 +110,22 @@ def _connect(path: str) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     # Load the sqlite-vec extension so vec0 virtual tables are queryable on
     # every connection. Safe to call repeatedly.
-    try:
-        conn.enable_load_extension(True)
-        sqlite_vec.load(conn)
-        conn.enable_load_extension(False)
-    except (AttributeError, sqlite3.OperationalError):
-        # Some Python builds disable extension loading; operate without vec
-        # support in that case so non-embedding code paths still work.
-        pass
+    if hasattr(conn, "enable_load_extension"):
+        try:
+            conn.enable_load_extension(True)
+            sqlite_vec.load(conn)
+            conn.enable_load_extension(False)
+        except sqlite3.OperationalError as e:
+            logger.warning(
+                "sqlite-vec extension could not be loaded (%s); "
+                "repo_embeddings operations will fail until this is fixed. "
+                "Ensure Python sqlite3 is built with --enable-loadable-sqlite-extensions.",
+                e,
+            )
+    else:
+        logger.warning(
+            "sqlite3 build lacks enable_load_extension; sqlite-vec unavailable."
+        )
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
@@ -124,11 +135,9 @@ def init_db(path: str = DEFAULT_DB_PATH) -> None:
     conn = _connect(path)
     conn.executescript(SCHEMA)
     # Embeddings: vec0 virtual table + idempotent column adds on `repos`.
-    try:
-        conn.execute(EMBEDDINGS_VEC_SCHEMA)
-    except sqlite3.OperationalError:
-        # Extension wasn't loadable on this connection — skip silently.
-        pass
+    # Let OperationalError propagate — a missing extension at init time should
+    # be a loud failure, not a silent "repo_embeddings doesn't exist" later.
+    conn.execute(EMBEDDINGS_VEC_SCHEMA)
     existing_cols = {row[1] for row in conn.execute("PRAGMA table_info('repos')").fetchall()}
     for col_name, col_type in REPOS_EMBEDDING_COLUMNS:
         if col_name not in existing_cols:

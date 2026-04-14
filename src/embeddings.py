@@ -42,11 +42,32 @@ def _reset_client_for_tests() -> None:
     _client = None
 
 
+def _transient_exc_types() -> tuple[type[BaseException], ...]:
+    """Lazily resolve voyageai's transient exception classes.
+
+    We retry only on rate-limit, server, connection, service-unavailable, and
+    timeout errors. Auth / invalid-request errors surface immediately.
+    """
+    try:
+        from voyageai import error as ve  # type: ignore
+
+        return (
+            ve.RateLimitError,
+            ve.ServerError,
+            ve.ServiceUnavailableError,
+            ve.APIConnectionError,
+            ve.Timeout,
+        )
+    except Exception:  # noqa: BLE001
+        return ()
+
+
 def _embed_with_retry(texts: list[str], input_type: str) -> list[list[float]]:
-    """Call Voyage with exponential backoff on transient errors."""
+    """Call Voyage with exponential backoff on transient errors only."""
     client = _get_client()
+    transient = _transient_exc_types()
     backoff = _INITIAL_BACKOFF
-    last_err: Exception | None = None
+    last_err: BaseException | None = None
     for attempt in range(_MAX_RETRIES):
         try:
             resp = client.embed(
@@ -55,12 +76,12 @@ def _embed_with_retry(texts: list[str], input_type: str) -> list[list[float]]:
                 input_type=input_type,
             )
             return list(resp.embeddings)
-        except Exception as e:  # noqa: BLE001 — voyageai raises bare Exception types
+        except transient as e:  # type: ignore[misc]
             last_err = e
             if attempt == _MAX_RETRIES - 1:
                 break
             logger.warning(
-                "Voyage embed attempt %d failed: %s; retrying in %.1fs",
+                "Voyage embed attempt %d failed (transient): %s; retrying in %.1fs",
                 attempt + 1,
                 e,
                 backoff,
