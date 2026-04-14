@@ -204,7 +204,8 @@ def _load_repos(repo_ids: list[int], path: str) -> list[dict]:
         cols = {r[1] for r in conn.execute("PRAGMA table_info(repos)").fetchall()}
         has_use_cases = "use_cases" in cols
         select_cols = (
-            "id, full_name, description, topics, reepo_score, language, license, updated_at"
+            "id, owner, name, full_name, description, topics, stars, reepo_score, "
+            "language, license, updated_at, category_primary"
             + (", use_cases" if has_use_cases else "")
         )
         placeholders = ",".join("?" * len(repo_ids))
@@ -290,6 +291,32 @@ def _candidate_block(intent: dict, repos: list[dict]) -> str:
 _JSON_LINE_RE = re.compile(r"\{[^\n]*\}")
 
 
+def _enrich_pick(repo: dict, role: str, why: str) -> dict:
+    """Build the canonical pick payload from a loaded repo row.
+
+    Shared by the SSE stream and the sync pipeline so the two paths can't
+    drift. Includes the enriched repo card fields the frontend needs.
+    """
+    return {
+        "repo_id": repo["id"],
+        "repo": repo.get("full_name"),
+        "role": str(role or "")[:60],
+        "why": str(why or "")[:500],
+        "id": repo["id"],
+        "owner": repo.get("owner"),
+        "name": repo.get("name"),
+        "full_name": repo.get("full_name"),
+        "description": repo.get("description"),
+        "stars": repo.get("stars"),
+        "reepo_score": repo.get("reepo_score"),
+        "language": repo.get("language"),
+        "topics": repo.get("topics") or [],
+        "category_primary": repo.get("category_primary"),
+        "license": repo.get("license"),
+        "updated_at": repo.get("updated_at"),
+    }
+
+
 def _parse_pick_lines(buf: str) -> tuple[list[dict], str]:
     """Return (complete_objects, remaining_buffer). Split on newlines."""
     picks: list[dict] = []
@@ -352,14 +379,8 @@ def _compose_stack_stream(
                     if not isinstance(rid, int) or rid not in valid_ids:
                         continue
                     repo = repo_lookup[rid]
-                    pick = {
-                        "repo_id": rid,
-                        "repo": repo.get("full_name"),
-                        "role": str(obj.get("role") or "")[:60],
-                        "why": str(obj.get("why") or "")[:500],
-                    }
                     emitted += 1
-                    yield pick
+                    yield _enrich_pick(repo, obj.get("role"), obj.get("why"))
             # flush trailing line
             if buf.strip():
                 m = _JSON_LINE_RE.search(buf)
@@ -373,12 +394,7 @@ def _compose_stack_stream(
                             if isinstance(rid, int) and rid in valid_ids:
                                 repo = repo_lookup[rid]
                                 emitted += 1
-                                yield {
-                                    "repo_id": rid,
-                                    "repo": repo.get("full_name"),
-                                    "role": str(obj.get("role") or "")[:60],
-                                    "why": str(obj.get("why") or "")[:500],
-                                }
+                                yield _enrich_pick(repo, obj.get("role"), obj.get("why"))
                     except json.JSONDecodeError:
                         pass
     except anthropic.APIError as e:

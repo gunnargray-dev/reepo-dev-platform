@@ -199,6 +199,16 @@ def test_successful_flow_fts_only(app_client, monkeypatch):
     assert "candidates" in names
     assert names.count("pick") >= 1
     assert names[-1] == "done"
+    # Pick payload must include enriched repo fields the frontend needs.
+    pick_events = [e[1] for e in events if e[0] == "pick"]
+    p0 = pick_events[0]
+    for k in ("repo_id", "repo", "role", "why", "id", "owner", "name",
+             "description", "stars", "reepo_score", "language", "topics",
+             "category_primary", "license", "updated_at"):
+        assert k in p0, f"pick missing {k}"
+    assert isinstance(p0["stars"], int)
+    assert p0["language"] in {"Python", "Go", "TypeScript"}
+    assert isinstance(p0["reepo_score"], int)
     # Order check
     assert names.index("intent") < names.index("candidates")
     assert names.index("candidates") < names.index("pick")
