@@ -4,6 +4,7 @@ import Layout from '@/components/layout';
 import Home from '@/pages/Home';
 
 const Search = lazy(() => import('@/pages/Search'));
+const Build = lazy(() => import('@/pages/Build'));
 const RepoDetail = lazy(() => import('@/pages/RepoDetail'));
 const Category = lazy(() => import('@/pages/Category'));
 const Trending = lazy(() => import('@/pages/Trending'));
@@ -28,6 +29,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/build" element={<Build />} />
           <Route path="/repo/:owner/:name" element={<RepoDetail />} />
           <Route path="/category/:slug" element={<Category />} />
           <Route path="/trending" element={<Trending />} />

@@ -1,7 +1,12 @@
 """Reepo database layer — SQLite storage for repos, scores, and categories."""
 import json
+import logging
 import sqlite3
 from pathlib import Path
+
+import sqlite_vec
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_DB_PATH = "data/reepo.db"
 
@@ -83,13 +88,52 @@ CREATE INDEX IF NOT EXISTS idx_repos_score ON repos(reepo_score DESC);
 CREATE INDEX IF NOT EXISTS idx_repos_category ON repos(category_primary);
 CREATE INDEX IF NOT EXISTS idx_repos_language ON repos(language);
 CREATE INDEX IF NOT EXISTS idx_repos_updated ON repos(updated_at DESC);
+
+CREATE TABLE IF NOT EXISTS ai_query_cache (
+    query_hash TEXT PRIMARY KEY,
+    query TEXT NOT NULL,
+    response_json TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_ai_query_cache_created ON ai_query_cache(created_at);
 """
+
+# Embedding-related schema objects. Applied separately from SCHEMA because the
+# vec0 virtual table requires the sqlite-vec extension to be loaded on the
+# connection and because we need idempotent ALTER TABLE guards for the new
+# columns on `repos`.
+EMBEDDINGS_VEC_SCHEMA = (
+    "CREATE VIRTUAL TABLE IF NOT EXISTS repo_embeddings USING vec0("
+    "repo_id INTEGER PRIMARY KEY, embedding FLOAT[512])"
+)
+REPOS_EMBEDDING_COLUMNS = (
+    ("embedding_version", "INTEGER"),
+    ("embedded_at", "TEXT"),
+)
 
 
 def _connect(path: str) -> sqlite3.Connection:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row
+    # Load the sqlite-vec extension so vec0 virtual tables are queryable on
+    # every connection. Safe to call repeatedly.
+    if hasattr(conn, "enable_load_extension"):
+        try:
+            conn.enable_load_extension(True)
+            sqlite_vec.load(conn)
+            conn.enable_load_extension(False)
+        except sqlite3.OperationalError as e:
+            logger.warning(
+                "sqlite-vec extension could not be loaded (%s); "
+                "repo_embeddings operations will fail until this is fixed. "
+                "Ensure Python sqlite3 is built with --enable-loadable-sqlite-extensions.",
+                e,
+            )
+    else:
+        logger.warning(
+            "sqlite3 build lacks enable_load_extension; sqlite-vec unavailable."
+        )
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
@@ -98,6 +142,14 @@ def _connect(path: str) -> sqlite3.Connection:
 def init_db(path: str = DEFAULT_DB_PATH) -> None:
     conn = _connect(path)
     conn.executescript(SCHEMA)
+    # Embeddings: vec0 virtual table + idempotent column adds on `repos`.
+    # Let OperationalError propagate — a missing extension at init time should
+    # be a loud failure, not a silent "repo_embeddings doesn't exist" later.
+    conn.execute(EMBEDDINGS_VEC_SCHEMA)
+    existing_cols = {row[1] for row in conn.execute("PRAGMA table_info('repos')").fetchall()}
+    for col_name, col_type in REPOS_EMBEDDING_COLUMNS:
+        if col_name not in existing_cols:
+            conn.execute(f"ALTER TABLE repos ADD COLUMN {col_name} {col_type}")
     for slug, name, description in CATEGORIES:
         conn.execute(
             "INSERT OR IGNORE INTO categories (slug, name, description) VALUES (?, ?, ?)",

@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Search as SearchIcon, SlidersHorizontal, X } from 'lucide-react';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { Search as SearchIcon, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { RepoCard } from '@/components/repo-card';
 import { Pagination } from '@/components/pagination';
+import { AIStackResults, type BuildIntent, type StackPick } from '@/components/AIStack';
 import type { Repo, CategoryInfo, StatsResponse } from '@/lib/api';
 import { searchRepos, getCategories, getStats } from '@/lib/api';
 
@@ -28,6 +30,11 @@ export default function Search() {
   const sort = searchParams.get('sort') || (q ? 'relevance' : 'stars');
   const minScore = parseInt(searchParams.get('min_score') || '0', 10);
   const page = parseInt(searchParams.get('page') || '1', 10);
+  // Routing mode: auto | keyword | ai. Default auto when q present so backend can route.
+  const modeParam = (searchParams.get('mode') || (q ? 'auto' : 'keyword')) as 'auto' | 'keyword' | 'ai';
+  // Filters/sort/pagination only make sense for keyword. Force keyword if any filter active.
+  const filtersActive = Boolean(category || language || minScore > 0 || page > 1);
+  const effectiveModeParam: 'auto' | 'keyword' | 'ai' = filtersActive ? 'keyword' : modeParam;
 
   const [repos, setRepos] = useState<Repo[]>([]);
   const [total, setTotal] = useState(0);
@@ -37,6 +44,11 @@ export default function Search() {
   const [languages, setLanguages] = useState<string[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [inputValue, setInputValue] = useState(q);
+  // AI-mode state.
+  const [resolvedMode, setResolvedMode] = useState<'keyword' | 'ai'>('keyword');
+  const [aiIntent, setAiIntent] = useState<BuildIntent | null>(null);
+  const [aiPicks, setAiPicks] = useState<StackPick[]>([]);
+  const [aiDegraded, setAiDegraded] = useState(false);
 
   useEffect(() => {
     document.title = q ? `"${q}" -- Search -- Reepo.dev` : 'Search -- Reepo.dev';
@@ -55,11 +67,59 @@ export default function Search() {
 
   useEffect(() => {
     setLoading(true);
+    let cancelled = false;
+
+    // AI/auto routing path: hit /api/search?mode=auto|ai directly so we can read the
+    // discriminated response shape. Falls back to keyword render if backend says so.
+    if (q && (effectiveModeParam === 'auto' || effectiveModeParam === 'ai')) {
+      const url = new URL('/api/search', window.location.origin);
+      url.searchParams.set('q', q);
+      url.searchParams.set('mode', effectiveModeParam);
+      fetch(url.toString())
+        .then((r) => r.json())
+        .then((data) => {
+          if (cancelled) return;
+          if (data?.mode === 'ai') {
+            setResolvedMode('ai');
+            setAiIntent((data.intent ?? null) as BuildIntent | null);
+            setAiPicks((data.picks ?? []) as StackPick[]);
+            setAiDegraded(Boolean(data.degraded));
+            setRepos([]);
+            setTotal((data.picks ?? []).length);
+            setTotalPages(0);
+          } else {
+            // keyword shape from search_routes: { results, total, page, pages, mode }
+            setResolvedMode('keyword');
+            setAiIntent(null);
+            setAiPicks([]);
+            setAiDegraded(false);
+            setRepos((data?.results ?? []) as Repo[]);
+            setTotal(data?.total ?? 0);
+            setTotalPages(data?.pages ?? 0);
+          }
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setResolvedMode('keyword');
+          setRepos([]);
+          setTotal(0);
+          setTotalPages(0);
+        })
+        .finally(() => { if (!cancelled) setLoading(false); });
+      return () => { cancelled = true; };
+    }
+
+    // Pure keyword path (filters active, explicit mode=keyword, or empty q).
+    setResolvedMode('keyword');
+    setAiIntent(null);
+    setAiPicks([]);
+    setAiDegraded(false);
     searchRepos({ q, category, language, min_score: minScore || undefined, sort, page, limit: 20 })
-      .then((res) => { setRepos(res.repos); setTotal(res.total); setTotalPages(res.pages); })
-      .catch(() => { setRepos([]); setTotal(0); setTotalPages(0); })
-      .finally(() => setLoading(false));
-  }, [q, category, language, sort, minScore, page]);
+      .then((res) => { if (cancelled) return; setRepos(res.repos); setTotal(res.total); setTotalPages(res.pages); })
+      .catch(() => { if (cancelled) return; setRepos([]); setTotal(0); setTotalPages(0); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [q, category, language, sort, minScore, page, effectiveModeParam]);
 
   const updateParam = useCallback((key: string, value: string) => {
     const next = new URLSearchParams(searchParams);
@@ -126,14 +186,39 @@ export default function Search() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-foreground">{q ? `Results for "${q}"` : 'All Repos'}</h1>
-          {!loading && <p className="mt-0.5 font-mono text-[13px] tabular-nums text-muted-foreground">{total} repos</p>}
+          {!loading && resolvedMode === 'keyword' && (
+            <p className="mt-0.5 font-mono text-[13px] tabular-nums text-muted-foreground">{total} repos</p>
+          )}
+          {!loading && resolvedMode === 'ai' && (
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <Badge variant="secondary" className="gap-1 text-[11px]">
+                <Sparkles className="h-3 w-3" />
+                AI-recommended stack
+              </Badge>
+              <Link
+                to={`/search?q=${encodeURIComponent(q)}&mode=keyword`}
+                className="text-[12px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+              >
+                View as keyword search →
+              </Link>
+            </div>
+          )}
         </div>
-        <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}>
-          <SlidersHorizontal className="mr-2 h-3.5 w-3.5" />
-          Filters{activeFilters > 0 && ` (${activeFilters})`}
-        </Button>
+        {resolvedMode === 'keyword' && (
+          <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <SlidersHorizontal className="mr-2 h-3.5 w-3.5" />
+            Filters{activeFilters > 0 && ` (${activeFilters})`}
+          </Button>
+        )}
       </div>
 
+      {resolvedMode === 'ai' && !loading && (
+        <div className="min-w-0">
+          <AIStackResults intent={aiIntent} picks={aiPicks} degraded={aiDegraded} />
+        </div>
+      )}
+
+      {resolvedMode === 'keyword' && (
       <div className="flex gap-8">
         <aside className={`${sidebarOpen ? 'block' : 'hidden'} w-full shrink-0 lg:block lg:w-48`}>
           <div className="sticky top-20 space-y-5">
@@ -207,6 +292,7 @@ export default function Search() {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }
