@@ -23,3 +23,9 @@ data/*.sqlite
 .worktrees/
 .vercel
 .env*.local
+
+# Local artifacts
+data/readmes/
+/reepo.db
+/project.toml
+frontend/tsconfig.tsbuildinfo
